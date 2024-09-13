@@ -8,6 +8,9 @@ import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.InvalidFilmException;
 import ru.yandex.practicum.filmorate.exception.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,14 +36,6 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void shouldGetAllUsers() {
-        Exception exception = assertThrows(InvalidUserException.class, () -> {
-            userController.getAllUsers();
-        });
-        assertEquals("Список пользователей пуст", exception.getMessage());
-    }
-
-    @Test
     void shouldAddFilm() {
         Film film = new Film(1, "Film Name", "Description");
 
@@ -60,5 +55,37 @@ class FilmorateApplicationTests {
 
         assertEquals("Updated Name", refreshedFilm.getName());
         assertEquals("Updated Description", refreshedFilm.getDescription());
+    }
+
+    @Test
+    void shouldGetAllUsers() {
+        Exception exception = assertThrows(InvalidUserException.class, () -> {
+            userController.getAllUsers();
+        });
+        assertEquals("Список пользователей пуст", exception.getMessage());
+    }
+
+    @Test
+    void shouldAddUser() {
+        User user = new User(1, "test@example.com", "testlogin", "Test Name", new Date());
+
+        User addedUser = userController.putTheUser(user);
+        assertEquals(user, addedUser);
+        assertEquals(1, userController.getAllUsers().size());
+    }
+
+    @Test
+    void shouldUpdateUser() {
+        // Создание и добавление пользователя
+        User user = new User(1, "test@example.com", "testlogin", "Test Name", new Date());
+        userController.putTheUser(user);
+
+        User updatedUser = new User(1, "updated@example.com", "updatedlogin", "Updated Name", new Date());
+
+        User refreshedUser = userController.refreshTheUser(updatedUser);
+
+        assertEquals("updated@example.com", refreshedUser.getEmail());
+        assertEquals("updatedlogin", refreshedUser.getLogin());
+        assertEquals("Updated Name", refreshedUser.getName());
     }
 }
