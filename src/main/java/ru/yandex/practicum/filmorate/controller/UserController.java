@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-@Validated
 @RestController
 @RequestMapping("/registration")
 public class UserController {
@@ -26,20 +24,8 @@ public class UserController {
     }
 
     @PatchMapping("/refresh")
-    public User refreshTheUser(@Valid @RequestBody User user) {
-
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            throw new InvalidUserException("задай email");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            throw new InvalidUserException("задай login");
-        }
-
-        if (user.getBirthday() == null) {
-            throw new InvalidUserException("задай birthday");
-        }
-
+    public User refreshTheUser(@RequestBody User user) {
+        validateUser(user);
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
         }
@@ -47,21 +33,24 @@ public class UserController {
     }
 
     @PostMapping("/put")
-    public User putTheUser(@Valid @RequestBody User user) {
-
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            throw new InvalidUserException("задай email");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            throw new InvalidUserException("задай login");
-        }
-
-        if (user.getBirthday() == null) {
-            throw new InvalidUserException("задай birthday");
-        }
-
+    public User putTheUser(@RequestBody User user) {
+        validateUser(user);
         users.put(user.getId(), user);
         return user;
+    }
+
+    private void validateUser(User user) {
+        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+            throw new InvalidUserException("Некорректный email, он должен содержать символ @");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            throw new InvalidUserException("Логин не может быть пустым и содержать пробелы");
+        }
+        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
+            throw new InvalidUserException("Дата рождения не может быть в будущем");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }

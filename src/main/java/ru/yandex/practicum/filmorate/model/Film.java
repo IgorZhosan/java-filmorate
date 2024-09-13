@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.Duration;
-import java.util.Date;
+import java.time.LocalDate;
+
 
 @Data
 public class Film {
@@ -21,14 +21,16 @@ public class Film {
     String description;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    Date releaseDate;
+    LocalDate releaseDate;
 
     @NotNull(message = "Длительность не может быть пустой")
-    Duration duration;
+    Integer duration;
 
-    public Film(int i, String filmName, String description) {
-        this.id = i;
-        this.name = filmName;
+    public Film(Integer id, String name, String description, LocalDate releaseDate, Integer duration) {
+        this.id = id;
+        this.name = name;
         this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
     }
 }

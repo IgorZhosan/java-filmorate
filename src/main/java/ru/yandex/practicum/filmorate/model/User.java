@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 public class User {
@@ -21,9 +21,9 @@ public class User {
     String name;
 
     @NotNull
-    Date birthday;
+    LocalDate birthday;
 
-    public User(int id, String email, String login, String name, Date birthday) {
+    public User(int id, String email, String login, String name, LocalDate birthday) {
         this.id = id;
         this.email = email;
         this.login = login;
