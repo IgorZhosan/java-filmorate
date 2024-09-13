@@ -25,4 +25,10 @@ public class Film {
 
     @NotNull(message = "Длительность не может быть пустой")
     Duration duration;
+
+    public Film(int i, String filmName, String description) {
+        this.id = i;
+        this.name = filmName;
+        this.description = description;
+    }
 }
