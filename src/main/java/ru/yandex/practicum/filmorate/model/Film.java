@@ -20,6 +20,7 @@ public class Film {
     @NotBlank(message = "Описание не может быть пустым")
     String description;
 
+    @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     LocalDate releaseDate;
 

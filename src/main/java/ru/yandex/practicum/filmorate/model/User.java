@@ -9,19 +9,19 @@ import java.time.LocalDate;
 @Data
 public class User {
     @NotNull
-    int id;
+    private int id;
 
     @NotBlank(message = "email не может быть пустым")
-    String email;
+    private String email;
 
     @NotBlank(message = "login не может быть пустым")
-    String login;
+    private String login;
 
     @NotBlank(message = "name не может быть пустым")
-    String name;
+    private String name;
 
     @NotNull
-    LocalDate birthday;
+    private LocalDate birthday;
 
     public User(int id, String email, String login, String name, LocalDate birthday) {
         this.id = id;

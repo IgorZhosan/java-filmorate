@@ -5,20 +5,23 @@ import ru.yandex.practicum.filmorate.exception.InvalidFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/home")
+@RequestMapping("/films")
 public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
+    private final List<Film> filmList = new ArrayList<>(films.values());
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
-    @GetMapping("/films")
-    public Map<Integer, Film> getAllFilms() {
+    @GetMapping("/get")
+    public List<Film> getAllFilms() {
         if (!films.isEmpty()) {
-            return films;
+            return List.copyOf(filmList);
         } else {
             throw new InvalidFilmException("Список фильмов пуст");
         }
@@ -44,9 +47,6 @@ public class FilmController {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new InvalidFilmException("Название не может быть пустым");
         }
-        if (film.getDescription() == null || film.getDescription().isBlank()) {
-            throw new InvalidFilmException("Описание не может быть пустым");
-        }
         if (film.getDescription().length() > 200) {
             throw new InvalidFilmException("Описание не может превышать 200 символов");
         }
@@ -58,3 +58,4 @@ public class FilmController {
         }
     }
 }
+

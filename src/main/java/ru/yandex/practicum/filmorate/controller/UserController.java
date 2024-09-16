@@ -5,19 +5,22 @@ import ru.yandex.practicum.filmorate.exception.InvalidUserException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/registration")
+@RequestMapping("/users")
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
+    private final List<User> userList = new ArrayList<>(users.values());
 
     @GetMapping("/get")
-    public Map<Integer, User> getAllUsers() {
+    public List<User> getAllUsers() {
         if (!users.isEmpty()) {
-            return users;
+            return List.copyOf(userList);
         } else {
             throw new InvalidUserException("Список пользователей пуст");
         }
