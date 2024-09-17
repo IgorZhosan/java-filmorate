@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
+@Validated
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
@@ -27,7 +30,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User refreshTheUser(@RequestBody User user) {
+    public User refreshTheUser(@Valid @RequestBody User user) {
         validateUser(user);
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
@@ -36,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User putTheUser(@RequestBody User user) {
+    public User putTheUser(@Valid @RequestBody User user) {
         validateUser(user);
         user.setId(userIdSequence++);
         users.put(user.getId(), user);

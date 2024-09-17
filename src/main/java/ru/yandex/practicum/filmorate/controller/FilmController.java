@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
+@Validated
 public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
@@ -28,7 +31,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film refreshAddToFilm(@RequestBody Film film) {
+    public Film refreshAddToFilm(@Valid @RequestBody Film film) {
         validateFilm(film);
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
@@ -37,7 +40,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film putTheFilm(@RequestBody Film film) {
+    public Film putTheFilm(@Valid @RequestBody Film film) {
         validateFilm(film);
         film.setId(filmIdSequence++);
         films.put(film.getId(), film);
