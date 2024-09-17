@@ -29,7 +29,6 @@ public class FilmController {
         return new ArrayList<>(films.values());
     }
 
-
     @PutMapping
     public Film refreshAddToFilm(@Valid @RequestBody Film film) {
         validateFilm(film);
