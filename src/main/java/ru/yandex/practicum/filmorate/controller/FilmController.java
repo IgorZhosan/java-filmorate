@@ -16,6 +16,7 @@ public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private int filmIdSequence = 1;
 
     @GetMapping
     public List<Film> getAllFilms() {
@@ -26,7 +27,7 @@ public class FilmController {
         }
     }
 
-    @PatchMapping
+    @PutMapping
     public Film refreshAddToFilm(@RequestBody Film film) {
         validateFilm(film);
         if (films.containsKey(film.getId())) {
@@ -38,6 +39,7 @@ public class FilmController {
     @PostMapping
     public Film putTheFilm(@RequestBody Film film) {
         validateFilm(film);
+        film.setId(filmIdSequence++);
         films.put(film.getId(), film);
         return film;
     }

@@ -15,6 +15,7 @@ import java.util.Map;
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
+    private int userIdSequence = 1;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -25,7 +26,7 @@ public class UserController {
         }
     }
 
-    @PatchMapping
+    @PutMapping
     public User refreshTheUser(@RequestBody User user) {
         validateUser(user);
         if (users.containsKey(user.getId())) {
@@ -37,6 +38,7 @@ public class UserController {
     @PostMapping
     public User putTheUser(@RequestBody User user) {
         validateUser(user);
+        user.setId(userIdSequence++);
         users.put(user.getId(), user);
         return user;
     }
