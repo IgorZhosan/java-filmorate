@@ -23,8 +23,12 @@ public class FilmController {
 
     @GetMapping
     public List<Film> getAllFilms() {
-        return new ArrayList<>(films.values());  // Возвращаем пустой список вместо ошибки
+        if (films.isEmpty()) {
+            throw new ValidationException("Список фильмов пуст");
+        }
+        return new ArrayList<>(films.values());
     }
+
 
     @PutMapping
     public Film refreshAddToFilm(@Valid @RequestBody Film film) {
