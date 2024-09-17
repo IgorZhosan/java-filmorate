@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FilmsTests {
     private FilmController filmController;
@@ -20,9 +21,12 @@ public class FilmsTests {
 
     @Test
     void shouldGetAllFilms() {
-        List<Film> films = filmController.getAllFilms();
-        assertEquals(0, films.size(), "Список фильмов должен быть пуст");
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            filmController.getAllFilms();
+        });
+        assertEquals("Список фильмов пуст", exception.getMessage());
     }
+
 
 
     @Test
