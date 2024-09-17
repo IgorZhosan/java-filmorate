@@ -16,7 +16,7 @@ public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
 
-    @GetMapping("/get")
+    @GetMapping
     public List<User> getAllUsers() {
         if (!users.isEmpty()) {
             return new ArrayList<>(users.values());
@@ -25,7 +25,7 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/refresh")
+    @PatchMapping
     public User refreshTheUser(@RequestBody User user) {
         validateUser(user);
         if (users.containsKey(user.getId())) {
@@ -34,7 +34,7 @@ public class UserController {
         return user;
     }
 
-    @PostMapping("/put")
+    @PostMapping
     public User putTheUser(@RequestBody User user) {
         validateUser(user);
         users.put(user.getId(), user);
