@@ -21,8 +21,9 @@ public class FilmsTests {
 
     @Test
     void shouldGetAllFilms() {
+
         ValidationException exception = assertThrows(ValidationException.class, () -> {
-            filmController.getAllFilms(); // Здесь список фильмов должен быть пустым
+            filmController.getAllFilms();
         });
         assertEquals("Список фильмов пуст", exception.getMessage());
     }
