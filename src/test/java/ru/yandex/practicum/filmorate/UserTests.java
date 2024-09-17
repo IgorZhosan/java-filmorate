@@ -29,15 +29,21 @@ public class UserTests {
 
     @Test
     void shouldUpdateUser() {
+        // Создаем пользователя
         User user = new User("test@example.com", "testlogin", "Test Name", LocalDate.of(1990, 1, 1));
-        userController.putTheUser(user);
+        User addedUser = userController.putTheUser(user);
 
+        // Создаем обновленного пользователя с тем же id
         User updatedUser = new User("updated@example.com", "updatedlogin", "Updated Name", LocalDate.of(1990, 1, 1));
+        updatedUser.setId(addedUser.getId()); // Присваиваем id ранее добавленного пользователя
 
+        // Обновляем пользователя
         User refreshedUser = userController.refreshTheUser(updatedUser);
 
+        // Проверяем, что обновленные поля соответствуют ожидаемым значениям
         assertEquals("updated@example.com", refreshedUser.getEmail());
         assertEquals("updatedlogin", refreshedUser.getLogin());
         assertEquals("Updated Name", refreshedUser.getName());
     }
+
 }
