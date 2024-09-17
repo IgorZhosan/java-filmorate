@@ -22,7 +22,7 @@ public class FilmsTests {
     @Test
     void shouldGetAllFilms() {
         ValidationException exception = assertThrows(ValidationException.class, () -> {
-            filmController.getAllFilms();
+            filmController.getAllFilms(); // Здесь список фильмов должен быть пустым
         });
         assertEquals("Список фильмов пуст", exception.getMessage());
     }
@@ -30,8 +30,7 @@ public class FilmsTests {
     @Test
     void shouldAddFilm() {
         Film film = new Film("Film Name", "Description", LocalDate.of(2000, 1, 1), 120);
-
-        Film addedFilm = filmController.addFilm(film);  // Обновленный метод
+        Film addedFilm = filmController.addFilm(film);
 
         assertEquals(film, addedFilm);
         assertEquals(1, filmController.getAllFilms().size());
