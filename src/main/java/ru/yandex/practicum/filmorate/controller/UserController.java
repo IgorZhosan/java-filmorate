@@ -27,12 +27,14 @@ public class UserController {
 
     @PutMapping
     public User refreshTheUser(@Valid @RequestBody User user) {
-        validateUser(user);
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
+        if (!users.containsKey(user.getId())) {
+            throw new ValidationException("Пользователь с таким ID не найден");
         }
+        validateUser(user);
+        users.put(user.getId(), user);
         return user;
     }
+
 
     @PostMapping
     public User putTheUser(@Valid @RequestBody User user) {

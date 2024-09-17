@@ -31,10 +31,11 @@ public class FilmController {
 
     @PutMapping
     public Film refreshAddToFilm(@Valid @RequestBody Film film) {
-        validateFilm(film);
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
+        if (!films.containsKey(film.getId())) {
+            throw new ValidationException("Фильм с таким ID не найден");
         }
+        validateFilm(film);
+        films.put(film.getId(), film);
         return film;
     }
 
