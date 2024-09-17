@@ -20,7 +20,6 @@ public class User {
     @Pattern(regexp = "^\\S+$", message = "Логин не может содержать пробелы")
     private String login;
 
-    @NotBlank(message = "name не может быть пустым")
     private String name;
 
     @NotNull
