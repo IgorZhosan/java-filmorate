@@ -27,8 +27,6 @@ public class FilmsTests {
         assertEquals("Список фильмов пуст", exception.getMessage());
     }
 
-
-
     @Test
     void shouldAddFilm() {
         Film film = new Film("Film Name", "Description", LocalDate.of(2000, 1, 1), 120);
