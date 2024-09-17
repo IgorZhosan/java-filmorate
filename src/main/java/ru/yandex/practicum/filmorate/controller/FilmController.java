@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.InvalidFilmException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -15,15 +15,14 @@ import java.util.Map;
 public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
-    private final List<Film> filmList = new ArrayList<>(films.values());
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
     @GetMapping("/get")
     public List<Film> getAllFilms() {
         if (!films.isEmpty()) {
-            return List.copyOf(filmList);
+            return new ArrayList<>(films.values());
         } else {
-            throw new InvalidFilmException("Список фильмов пуст");
+            throw new ValidationException("Список фильмов пуст");
         }
     }
 
@@ -45,16 +44,16 @@ public class FilmController {
 
     private void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
-            throw new InvalidFilmException("Название не может быть пустым");
+            throw new ValidationException("Название не может быть пустым");
         }
         if (film.getDescription().length() > 200) {
-            throw new InvalidFilmException("Описание не может превышать 200 символов");
+            throw new ValidationException("Описание не может превышать 200 символов");
         }
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            throw new InvalidFilmException("Дата релиза не может быть раньше 28 декабря 1895 года");
+            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
         if (film.getDuration() == null || film.getDuration() <= 0) {
-            throw new InvalidFilmException("Продолжительность фильма должна быть положительным числом");
+            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
     }
 }

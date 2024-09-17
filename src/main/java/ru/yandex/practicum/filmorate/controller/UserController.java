@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.InvalidUserException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -15,14 +15,13 @@ import java.util.Map;
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
-    private final List<User> userList = new ArrayList<>(users.values());
 
     @GetMapping("/get")
     public List<User> getAllUsers() {
         if (!users.isEmpty()) {
-            return List.copyOf(userList);
+            return new ArrayList<>(users.values());
         } else {
-            throw new InvalidUserException("Список пользователей пуст");
+            throw new ValidationException("Список пользователей пуст");
         }
     }
 
@@ -44,13 +43,13 @@ public class UserController {
 
     private void validateUser(User user) {
         if (user.getEmail() == null || !user.getEmail().contains("@")) {
-            throw new InvalidUserException("Некорректный email, он должен содержать символ @");
+            throw new ValidationException("Некорректный email, он должен содержать символ @");
         }
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new InvalidUserException("Логин не может быть пустым и содержать пробелы");
+            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         }
         if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            throw new InvalidUserException("Дата рождения не может быть в будущем");
+            throw new ValidationException("Дата рождения не может быть в будущем");
         }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());

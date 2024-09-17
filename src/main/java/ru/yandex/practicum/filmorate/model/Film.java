@@ -12,20 +12,20 @@ import java.time.LocalDate;
 public class Film {
 
     @NotNull
-    int id;
+    private int id;
 
     @NotBlank(message = "Название не может быть пустым")
-    String name;
+    private String name;
 
     @NotBlank(message = "Описание не может быть пустым")
-    String description;
+    private String description;
 
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
 
     @NotNull(message = "Длительность не может быть пустой")
-    Integer duration;
+    private Integer duration;
 
     public Film(Integer id, String name, String description, LocalDate releaseDate, Integer duration) {
         this.id = id;
