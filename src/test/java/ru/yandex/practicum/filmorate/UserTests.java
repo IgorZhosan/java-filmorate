@@ -17,12 +17,11 @@ public class UserTests {
         userController = new UserController();
     }
 
-
     @Test
     void shouldAddUser() {
-        User user = new User(1, "test@example.com", "testlogin", "Test Name", LocalDate.of(1990, 1, 1));
+        User user = new User("test@example.com", "testlogin", "Test Name", LocalDate.of(1990, 1, 1));
 
-        User addedUser = userController.putTheUser(user);
+        User addedUser = userController.putTheUser(user);  // Обновленный метод
 
         assertEquals(user, addedUser);
         assertEquals(1, userController.getAllUsers().size());
@@ -30,10 +29,10 @@ public class UserTests {
 
     @Test
     void shouldUpdateUser() {
-        User user = new User(1, "test@example.com", "testlogin", "Test Name", LocalDate.of(1990, 1, 1));
+        User user = new User("test@example.com", "testlogin", "Test Name", LocalDate.of(1990, 1, 1));
         userController.putTheUser(user);
 
-        User updatedUser = new User(1, "updated@example.com", "updatedlogin", "Updated Name", LocalDate.of(1990, 1, 1));
+        User updatedUser = new User("updated@example.com", "updatedlogin", "Updated Name", LocalDate.of(1990, 1, 1));
 
         User refreshedUser = userController.refreshTheUser(updatedUser);
 
@@ -42,4 +41,3 @@ public class UserTests {
         assertEquals("Updated Name", refreshedUser.getName());
     }
 }
-

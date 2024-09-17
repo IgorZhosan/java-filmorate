@@ -11,8 +11,7 @@ import java.time.LocalDate;
 @Data
 public class Film {
 
-    @NotNull
-    private int id;
+    private int id;  // Поле не должно быть обязательным при создании нового фильма
 
     @NotBlank(message = "Название не может быть пустым")
     private String name;
@@ -27,11 +26,11 @@ public class Film {
     @NotNull(message = "Длительность не может быть пустой")
     private Integer duration;
 
-    public Film(Integer id, String name, String description, LocalDate releaseDate, Integer duration) {
-        this.id = id;
+    public Film(String name, String description, LocalDate releaseDate, Integer duration) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
     }
 }
+

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class FIlmsTests {
+public class FilmsTests {
     private FilmController filmController;
 
     @BeforeEach
@@ -29,9 +29,9 @@ public class FIlmsTests {
 
     @Test
     void shouldAddFilm() {
-        Film film = new Film(1, "Film Name", "Description", LocalDate.of(2000, 1, 1), 120);
+        Film film = new Film("Film Name", "Description", LocalDate.of(2000, 1, 1), 120);
 
-        Film addedFilm = filmController.putTheFilm(film);
+        Film addedFilm = filmController.addFilm(film);  // Обновленный метод
 
         assertEquals(film, addedFilm);
         assertEquals(1, filmController.getAllFilms().size());

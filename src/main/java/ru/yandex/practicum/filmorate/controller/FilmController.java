@@ -23,11 +23,10 @@ public class FilmController {
 
     @GetMapping
     public List<Film> getAllFilms() {
-        if (!films.isEmpty()) {
-            return new ArrayList<>(films.values());
-        } else {
+        if (films.isEmpty()) {
             throw new ValidationException("Список фильмов пуст");
         }
+        return new ArrayList<>(films.values());
     }
 
     @PutMapping
@@ -40,7 +39,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film putTheFilm(@Valid @RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         validateFilm(film);
         film.setId(filmIdSequence++);
         films.put(film.getId(), film);
@@ -62,4 +61,3 @@ public class FilmController {
         }
     }
 }
-
