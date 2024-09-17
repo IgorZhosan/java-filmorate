@@ -22,11 +22,7 @@ public class UserController {
 
     @GetMapping
     public List<User> getAllUsers() {
-        if (!users.isEmpty()) {
-            return new ArrayList<>(users.values());
-        } else {
-            throw new ValidationException("Список пользователей пуст");
-        }
+        return new ArrayList<>(users.values());  // Возвращаем пустой список вместо ошибки
     }
 
     @PutMapping
@@ -41,23 +37,14 @@ public class UserController {
     @PostMapping
     public User putTheUser(@Valid @RequestBody User user) {
         validateUser(user);
-        user.setId(userIdSequence++);
+        user.setId(userIdSequence++);  // Присваиваем новый id при добавлении
         users.put(user.getId(), user);
         return user;
     }
 
     private void validateUser(User user) {
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
-            throw new ValidationException("Некорректный email, он должен содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
         }
     }
 }
