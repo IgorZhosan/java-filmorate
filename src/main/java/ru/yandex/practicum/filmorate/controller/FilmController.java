@@ -48,10 +48,16 @@ public class FilmController {
     }
 
     private void validateFilm(Film film) {
+        if (film.getReleaseDate() == null) {
+            throw new ValidationException("Не может быть null");
+        }
         if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
-        if (film.getDuration() <= 0) {
+        if (film.getDuration() == 0) {
+            throw new ValidationException("Не может быть 0");
+        }
+        if (film.getDuration() < 0) {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
     }

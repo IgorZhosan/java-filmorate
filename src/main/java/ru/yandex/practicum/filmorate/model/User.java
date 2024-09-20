@@ -2,13 +2,14 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
+@Builder
 public class User {
     private int id;
 
@@ -22,14 +23,6 @@ public class User {
 
     private String name;
 
-    @NotNull
     private LocalDate birthday;
-
-    public User(String email, String login, String name, LocalDate birthday) {
-        this.email = email;
-        this.login = login;
-        this.name = (name == null || name.isBlank()) ? login : name;
-        this.birthday = birthday;
-    }
 }
 

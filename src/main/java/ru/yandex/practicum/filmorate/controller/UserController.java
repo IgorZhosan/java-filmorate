@@ -35,7 +35,6 @@ public class UserController {
         return user;
     }
 
-
     @PostMapping
     public User putTheUser(@Valid @RequestBody User user) {
         validateUser(user);
@@ -45,6 +44,9 @@ public class UserController {
     }
 
     private void validateUser(User user) {
+        if (user.getBirthday() == null) {
+            throw new ValidationException("не может быть null");
+        }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем");
         }

@@ -11,15 +11,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FilmsTests {
     private FilmController filmController;
+    private Film film;
 
     @BeforeEach
     void setUp() {
         filmController = new FilmController();
+        film =  Film.builder()
+                .name("Film Name")
+                .description("Description")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(120)
+                .build();
     }
 
     @Test
     void shouldAddFilm() {
-        Film film = new Film("Film Name", "Description", LocalDate.of(2000, 1, 1), 120);
+
         Film addedFilm = filmController.addFilm(film);
 
         assertEquals(film, addedFilm);
