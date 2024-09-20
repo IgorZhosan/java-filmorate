@@ -38,7 +38,7 @@ public class UserController {
     @PostMapping
     public User putTheUser(@Valid @RequestBody User user) {
         validateUser(user);
-        user.setId(userIdSequence++);  // Присваиваем новый id при добавлении
+        user.setId(userIdSequence++);
         users.put(user.getId(), user);
         return user;
     }
