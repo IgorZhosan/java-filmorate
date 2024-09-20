@@ -23,7 +23,6 @@ public class Film {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
 
-    @NotNull
     private Integer duration;
 }
 
