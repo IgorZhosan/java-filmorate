@@ -44,9 +44,6 @@ public class UserController {
     }
 
     private void validateUser(User user) {
-        if (user.getName() == null) {
-            throw new ValidationException("не может быть null");
-        }
         if (user.getBirthday() == null) {
             throw new ValidationException("не может быть null");
         }
