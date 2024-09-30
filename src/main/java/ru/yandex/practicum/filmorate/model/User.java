@@ -24,4 +24,11 @@ public class User {
     private String name;
 
     private LocalDate birthday;
+
+    public String getName() {
+        if (name == null || name.isBlank()) {
+            return login;
+        }
+        return name;
+    }
 }

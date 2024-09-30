@@ -25,7 +25,7 @@ public class UserController {
         return new ArrayList<>(users.values());  // Возвращаем пустой список вместо ошибки
     }
 
-    @PatchMapping
+    @PutMapping
     public User refreshTheUser(@Valid @RequestBody User user) {
         if (!users.containsKey(user.getId())) {
             throw new ValidationException("Пользователь с таким ID не найден");
