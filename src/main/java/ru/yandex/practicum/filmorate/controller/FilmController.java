@@ -42,12 +42,15 @@ public class FilmController {
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
         validateFilm(film);
-        film.setId(filmIdSequence++);  // Присваиваем новый id при добавлении
+        film.setId(filmIdSequence++);
         films.put(film.getId(), film);
         return film;
     }
 
     private void validateFilm(Film film) {
+        if (film.getName() == null || film.getName().isBlank()) {
+            throw new ValidationException("Не может быть null");
+        }
         if (film.getReleaseDate() == null) {
             throw new ValidationException("Не может быть null");
         }

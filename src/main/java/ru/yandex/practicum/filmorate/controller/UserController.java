@@ -45,6 +45,7 @@ public class UserController {
 
     private void validateUser(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
             throw new jakarta.validation.ValidationException("Не может быть пустым или null");
         }
         if (user.getBirthday() == null) {

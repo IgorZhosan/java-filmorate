@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +13,6 @@ public class Film {
 
     private int id;
 
-    @NotNull(message = "Не может быть пустым")
     private String name;
 
     @Size(max = 200, message = "Описание не может превышать 200 символов")
