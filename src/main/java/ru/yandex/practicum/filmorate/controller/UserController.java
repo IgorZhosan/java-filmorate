@@ -37,10 +37,12 @@ public class UserController {
 
     @PostMapping
     public User putTheUser(@Valid @RequestBody User user) {
-        validateUser(user);
-        user.setId(userIdSequence++);
-        users.put(user.getId(), user);
-        return user;
+        if (!users.containsKey(user.getId())) {
+            validateUser(user);
+            user.setId(userIdSequence++);
+            users.put(user.getId(), user);
+            return user;
+        } else throw new ValidationException("Такой пользователь уже есть");
     }
 
     private void validateUser(User user) {
