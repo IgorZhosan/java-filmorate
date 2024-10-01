@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +16,8 @@ public class Film {
 
     private int id;
 
+    @NotBlank
+    @NotNull
     private String name;
 
     @Size(max = 200, message = "Описание не может превышать 200 символов")
@@ -21,5 +26,6 @@ public class Film {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
 
+    @Positive
     private Integer duration;
 }

@@ -41,27 +41,17 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
-        validateFilm(film);
-        film.setId(filmIdSequence++);
-        films.put(film.getId(), film);
-        return film;
+        if (!films.containsKey(film)) {
+            validateFilm(film);
+            film.setId(filmIdSequence++);
+            films.put(film.getId(), film);
+            return film;
+        } else throw new ValidationException("Такой фильм уже есть");
     }
 
     private void validateFilm(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new ValidationException("Не может быть null");
-        }
-        if (film.getReleaseDate() == null) {
-            throw new ValidationException("Не может быть null");
-        }
-        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
+        if (film.getReleaseDate() == null && film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() == 0) {
-            throw new ValidationException("Не может быть 0");
-        }
-        if (film.getDuration() < 0) {
-            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
     }
 }

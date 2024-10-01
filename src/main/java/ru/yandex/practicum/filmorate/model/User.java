@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,6 +13,7 @@ public class User {
 
     @NotBlank(message = "email не может быть пустым")
     @Email(message = "Некорректный email")
+    @NotEmpty
     private String email;
 
     @NotBlank(message = "login не может быть пустым")
@@ -23,12 +22,6 @@ public class User {
 
     private String name;
 
+    @PastOrPresent(message = "Дата рождения не может быть в будушем")
     private LocalDate birthday;
-
-    public String getName() {
-        if (name == null || name.isBlank()) {
-            return login;
-        }
-        return name;
-    }
 }
