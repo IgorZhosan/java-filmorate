@@ -24,6 +24,7 @@ public class Film {
     private String description;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @NotNull
     private LocalDate releaseDate;
 
     @Positive
