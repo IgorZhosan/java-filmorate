@@ -16,6 +16,7 @@ import java.util.Map;
 @Validated
 public class UserController {
 
+    //убрать мэпу
     private final Map<Integer, User> users = new HashMap<>();
     private int userIdSequence = 1;
 

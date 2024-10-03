@@ -17,6 +17,7 @@ import java.util.Map;
 @Validated
 public class FilmController {
 
+    // убрать мэпу
     private final Map<Integer, Film> films = new HashMap<>();
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private int filmIdSequence = 1;
