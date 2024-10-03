@@ -8,12 +8,16 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
 public class Film {
 
     private int id;
+
+    Set<Long> likes = new HashSet<>();
 
     @NotBlank
     private String name;

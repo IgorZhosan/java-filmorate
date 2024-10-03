@@ -20,7 +20,7 @@ public class FilmController {
     // убрать мэпу
     private final Map<Integer, Film> films = new HashMap<>();
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private int filmIdSequence = 1;
+
 
     @GetMapping
     public List<Film> getAllFilms() {
@@ -44,7 +44,7 @@ public class FilmController {
     public Film addFilm(@Valid @RequestBody Film film) {
         if (!films.containsKey(film)) {
             validateFilm(film);
-            film.setId(filmIdSequence++);
+           // film.setId(filmIdSequence++);
             films.put(film.getId(), film);
             return film;
         } else throw new ValidationException("Такой фильм уже есть");
