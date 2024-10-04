@@ -21,7 +21,6 @@ public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
-
     @GetMapping
     public List<Film> getAllFilms() {
         if (films.isEmpty()) {

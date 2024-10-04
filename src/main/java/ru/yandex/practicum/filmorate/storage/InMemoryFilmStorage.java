@@ -22,14 +22,23 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void refreshFilm(Film film) {
-        if (!films.containsKey(film.getId())) {
-
-        }
+    public void updateFilm(Film film) {
+        if (films.containsKey(film.getId())) {
+            films.put(film.getId(), film);
+        } else throw new ValidationException("Нельзя обновить фильм, которого нет");
     }
 
     @Override
     public void deleteFilm(Film film) {
+        if (films.containsKey(film.getId())) {
+            films.remove(film.getId());
+        } else throw new ValidationException("Нельзя удалить фильм, которого нет");
+    }
 
+    @Override
+    public Film getFilm(Film film) {
+        if (films.containsKey(film.getId())) {
+            return films.get(film.getId());
+        } else throw new ValidationException("Такого фильма нет");
     }
 }

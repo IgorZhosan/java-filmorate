@@ -2,11 +2,13 @@ package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.List;
+
 public interface UserService {
 
-    void addFriend(User friendUser);
+    void addFriend(User user, User friend);
 
-    void deleteFriend(User friendUser);
+    void deleteFriend(User user, User friend);
 
-    void getAllFriend(User friendsUser);
+    List<User> getAllFriend(User friendsUser);
 }

@@ -6,7 +6,9 @@ public interface UserStorage {
 
     void addingUser(User user);
 
-    void refreshUser(User user);
+    void updateUser(User user);
 
     void deleteUser(User user);
+
+    User getUser(User user);
 }

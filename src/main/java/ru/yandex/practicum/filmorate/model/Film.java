@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -30,4 +31,16 @@ public class Film {
 
     @Positive
     private Integer duration;
+
+    public void setLikes(Long idUser) {
+        if (!likes.contains(idUser)) {
+            likes.add(idUser);
+        } else throw new ValidationException("Такой лайк уже есть");
+    }
+
+    public void deleteLike(Long idUser) {
+        if (likes.contains(idUser)) {
+            likes.remove(idUser);
+        } else throw new ValidationException("Такого лайка нет");
+    }
 }
