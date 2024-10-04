@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -16,7 +18,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addingFilm(Film film) {
         if (!films.containsKey(film.getId())) {
-            film.setId(++filmIdSequence);
+            film.setId(filmIdSequence++);
             films.put(film.getId(), film);
         } else throw new ValidationException("Такой фильм уже есть");
     }
@@ -29,16 +31,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilm(Film film) {
-        if (films.containsKey(film.getId())) {
-            films.remove(film.getId());
+    public void deleteFilm(Long filmId) {
+        if (films.containsKey(filmId)) {
+            films.remove(filmId);
         } else throw new ValidationException("Нельзя удалить фильм, которого нет");
     }
 
     @Override
-    public Film getFilm(Film film) {
-        if (films.containsKey(film.getId())) {
-            return films.get(film.getId());
+    public Film getFilm(Long filmId) {
+        if (films.containsKey(filmId)) {
+            return films.get(filmId);
         } else throw new ValidationException("Такого фильма нет");
+    }
+
+    @Override
+    public List<Film> getAllFilm() {
+        return new ArrayList<>(films.values());
     }
 }

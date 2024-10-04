@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -16,7 +18,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addingUser(User user) {
         if (!users.containsKey(user.getId())) {
-            users.put(++userIdSequence, user);
+            users.put(userIdSequence++, user);
         } else throw new ValidationException("Такой пользователь уже есть");
     }
 
@@ -39,5 +41,10 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(user.getId())) {
             return users.get(user.getId());
         } else throw new ValidationException("Такого пользователя нет");
+    }
+
+    @Override
+    public List<User> getAllUser() {
+        return new ArrayList<>(users.values());
     }
 }

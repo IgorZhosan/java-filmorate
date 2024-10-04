@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 public class ErrorHandler {
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
