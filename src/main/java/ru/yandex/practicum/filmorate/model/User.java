@@ -15,7 +15,7 @@ public class User {
 
     private int id;
 
-    Set<Long> friends = new HashSet<>();
+    private final Set<Long> friends = new HashSet<>();
 
     @NotBlank(message = "email не может быть пустым")
     @Email(message = "Некорректный email")

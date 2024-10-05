@@ -12,21 +12,21 @@ import java.util.Map;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
     private int filmIdSequence = 1;
 
     @Override
     public void addingFilm(Film film) {
-        if (!films.containsKey(film.getId())) {
+        if (!films.containsKey((long) film.getId())) {
             film.setId(filmIdSequence++);
-            films.put(film.getId(), film);
+            films.put((long) film.getId(), film);
         } else throw new ValidationException("Такой фильм уже есть");
     }
 
     @Override
     public void updateFilm(Film film) {
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
+        if (films.containsKey((long) film.getId())) {
+            films.put((long) film.getId(), film);
         } else throw new ValidationException("Нельзя обновить фильм, которого нет");
     }
 

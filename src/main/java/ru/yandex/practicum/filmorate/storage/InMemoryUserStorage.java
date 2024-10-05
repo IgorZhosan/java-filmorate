@@ -37,9 +37,9 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUser(User user) {
-        if (users.containsKey(user.getId())) {
-            return users.get(user.getId());
+    public User getUser(Long userId) {
+        if (users.containsKey((long)userId)) {
+            return users.get((long) userId);
         } else throw new ValidationException("Такого пользователя нет");
     }
 

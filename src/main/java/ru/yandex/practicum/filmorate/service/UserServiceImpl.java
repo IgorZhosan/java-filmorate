@@ -5,10 +5,14 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
+
     private final UserStorage userStorage;
 
     @Autowired
@@ -17,17 +21,60 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addFriend(User user, User friendId) {
-        userStorage.getUser(user).setFriend((long) friendId.getId());
+    public void addFriend(Long userId, Long friendId) {
+        userStorage.getUser(userId).setFriend(friendId);
     }
 
     @Override
-    public void deleteFriend(User user, User friend) {
-        userStorage.getUser(user).deleteFriend((long) friend.getId());
+    public void deleteFriend(Long userId, Long friendId) {
+        userStorage.getUser(userId).deleteFriend(friendId);
     }
 
     @Override
     public List<User> getAllFriend(User friendsUser) {
         return List.of();
+    }
+
+    @Override
+    public void addingUser(User user) {
+        userStorage.addingUser(user);
+    }
+
+    @Override
+    public void updateUser(User user) {
+        userStorage.updateUser(user);
+    }
+
+    @Override
+    public void deleteUser(User user) {
+        userStorage.deleteUser(user);
+    }
+
+    @Override
+    public User getUser(Long userId) {
+        return userStorage.getUser(userId);
+    }
+
+    @Override
+    public List<User> getAllUser() {
+        return userStorage.getAllUser();
+    }
+
+    public List<Long> findCommonFriends(Long id, Long friendId) {
+        User user = userStorage.getUser(id);
+        User friendUser = userStorage.getUser(friendId);
+
+        Set<Long> userFriends = new HashSet<>(user.getFriends());
+        Set<Long> friendFriends = new HashSet<>(friendUser.getFriends());
+
+        userFriends.retainAll(friendFriends);
+
+        return new ArrayList<>(userFriends);
+    }
+
+    public void validateUser(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }

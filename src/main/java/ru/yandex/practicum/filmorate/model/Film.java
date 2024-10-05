@@ -18,7 +18,7 @@ public class Film {
 
     private int id;
 
-    Set<Long> likes = new HashSet<>();
+    private final Set<Long> likes = new HashSet<>();
 
     @NotBlank
     private String name;

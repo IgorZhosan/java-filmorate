@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+//package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FilmsTests {
+//public class FilmsTests {
 //    private FilmController filmController;
 //    private Film film;
 //
@@ -23,7 +23,7 @@ public class FilmsTests {
 //                .duration(120)
 //                .build();
 //    }
-
+//
 //    @Test
 //    void shouldAddFilm() {
 //
@@ -32,4 +32,4 @@ public class FilmsTests {
 //        assertEquals(film, addedFilm);
 //        assertEquals(1, filmController.getAllFilms().size());
 //    }
-}
+//}
