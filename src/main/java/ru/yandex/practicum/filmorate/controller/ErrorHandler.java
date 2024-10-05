@@ -12,21 +12,28 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler
+    @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(final ValidationException e) {
-        return new ErrorResponse("Error", e.getMessage());
+    public ErrorResponse handleValidationException(final ValidationException e) {
+        return new ErrorResponse("Validation Error", e.getMessage());
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleException(final MethodArgumentNotValidException e) {
-        return new ErrorResponse("Error", e.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+        String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        return new ErrorResponse("Validation Error", errorMessage);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NotFoundException e) {
-        return new ErrorResponse("Error", e.getMessage());
+        return new ErrorResponse("Not Found Error", e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleException(final Exception e) {
+        return new ErrorResponse("Internal Server Error", "Произошла внутренняя ошибка сервера. Пожалуйста, попробуйте позже.");
     }
 }
