@@ -21,8 +21,7 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-        String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        return new ErrorResponse("Validation Error", errorMessage);
+        return new ErrorResponse("Validation Error", e.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -34,6 +33,6 @@ public class ErrorHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(final Exception e) {
-        return new ErrorResponse("Internal Server Error", "Произошла внутренняя ошибка сервера. Пожалуйста, попробуйте позже.");
+        return new ErrorResponse("Internal Server Error", "Произошла внутренняя ошибка сервера.");
     }
 }

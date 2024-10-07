@@ -31,11 +31,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllFriend(User friendsUser) {
-        return List.of();
-    }
-
-    @Override
     public void addingUser(User user) {
         userStorage.addingUser(user);
     }

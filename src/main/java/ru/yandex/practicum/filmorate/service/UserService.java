@@ -10,8 +10,6 @@ public interface UserService {
 
     void deleteFriend(Long userId, Long friendId);
 
-    List<User> getAllFriend(User friendsUser);
-
     void addingUser(User user);
 
     void updateUser(User user);

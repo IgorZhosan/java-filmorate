@@ -12,20 +12,21 @@ import java.util.Map;
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
     private int userIdSequence = 1;
 
     @Override
     public void addingUser(User user) {
         if (!users.containsKey(user.getId())) {
-            users.put(userIdSequence++, user);
+            user.setId(userIdSequence++);
+            users.put((long) user.getId(), user);
         } else throw new ValidationException("Такой пользователь уже есть");
     }
 
     @Override
     public void updateUser(User user) {
         if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
+            users.put((long) user.getId(), user);
         } else throw new ValidationException("Нельзя обновить пользователя, которого нет");
     }
 
@@ -38,8 +39,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User getUser(Long userId) {
-        if (users.containsKey((long)userId)) {
-            return users.get((long) userId);
+        if (users.containsKey(userId)) {
+            return users.get(userId);
         } else throw new ValidationException("Такого пользователя нет");
     }
 
