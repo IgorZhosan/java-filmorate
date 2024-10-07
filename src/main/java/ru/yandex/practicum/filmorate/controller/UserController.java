@@ -6,7 +6,6 @@ import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,14 +13,17 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping //получение списка пользователей.
     @ResponseStatus(HttpStatus.OK)
     public Collection<User> getAllUsers() {
-        return List.copyOf(userService.getAllUsers());
+        return userService.getAllUsers();
     }
 
     @PostMapping() // для добавления нового пользователя в список.
@@ -60,3 +62,4 @@ public class UserController {
         return userService.getCommonFriends(idUser, idOther);
     }
 }
+
