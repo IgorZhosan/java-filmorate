@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -45,14 +46,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public User addFriend(@PathVariable @Positive Long id, @PathVariable @Positive Long friendId) {
         userService.addFriend(id, friendId);
         return userService.getUser(id);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public User deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public User deleteFriend(@PathVariable @Positive Long id, @PathVariable @Positive Long friendId) {
         userService.deleteFriend(id, friendId);
         userService.deleteFriend(friendId, id);
         return userService.getUser(id);
@@ -60,7 +61,7 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<Long> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<Long> getCommonFriends(@PathVariable @Positive Long id, @PathVariable @Positive Long otherId) {
         return userService.findCommonFriends(id, otherId);
     }
 }
