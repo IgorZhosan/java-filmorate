@@ -36,18 +36,6 @@ public class FilmController {
         return filmService.filmUpdate(film);
     }
 
-    @PutMapping("/{id}/like/{userId}") //добавление лайка
-    @ResponseStatus(HttpStatus.OK)
-    public Set<Long> addLike(@PathVariable @Positive Long id, @PathVariable("userId") @Positive Long idUser) {
-        return filmService.addLike(id, idUser);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}") //удаление лайка
-    @ResponseStatus(HttpStatus.OK)
-    public Set<Long> deleteLike(@PathVariable @Positive Long id, @PathVariable("userId") @Positive Long idUser) {
-        return filmService.deleteLike(id, idUser);
-    }
-
     @GetMapping("/popular")  // получение списка лучших фильмов
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive Long count) {
