@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -35,7 +36,17 @@ public class UserController {
         return userService.userUpdate(user);
     }
 
+    @PutMapping("/{id}/friends/{friendId}") //добавление пользователя в друзья
+    @ResponseStatus(HttpStatus.OK)
+    public Set<Long> addNewFriend(@PathVariable("id") @Positive Long idUser, @PathVariable("friendId") @Positive Long idFriend) {
+        return userService.addNewFriend(idUser, idFriend);
+    }
 
+    @DeleteMapping("/{id}/friends/{friendId}") // удаление из друзей пользователя
+    @ResponseStatus(HttpStatus.OK)
+    public Set<Long> deleteFriend(@PathVariable("id") @Positive Long idUser, @PathVariable("friendId") @Positive Long idFriend) {
+        return userService.deleteFriend(idUser, idFriend);
+    }
 
     @GetMapping("/{id}/friends") // получение списка друзей пользователя
     @ResponseStatus(HttpStatus.OK)

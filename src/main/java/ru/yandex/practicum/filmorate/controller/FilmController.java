@@ -40,5 +40,17 @@ public class FilmController {
     public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive Long count) {
         return filmService.getPopular(count);
     }
+
+    @PutMapping("/{filmId}/user/{userId}") // добавление лайка
+    @ResponseStatus(HttpStatus.OK)
+    public void addLike(@PathVariable @Positive Long filmId, @PathVariable @Positive Long userId) {
+        filmService.addLike(filmId, userId);
+    }
+
+    @DeleteMapping("/{filmId}/user/{userId}") // удаление лайка
+    @ResponseStatus(HttpStatus.OK)
+    public void removeLike(@PathVariable @Positive Long filmId, @PathVariable @Positive Long userId) {
+        filmService.deleteLike(filmId, userId);
+    }
 }
 
