@@ -32,14 +32,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
-        log.info("Друг " + friendId + " пользователя " + userId + " удален.");
-        userStorage.getUser(userId).deleteFriend(friendId);
-        userStorage.getUser(friendId).deleteFriend(userId);
+        User user = userStorage.getUser(userId);
+        User friend = userStorage.getUser(friendId);
+
+        if (user == null || friend == null) {
+            log.warn("Пользователь не найден");
+            throw new NotFoundException("Один из пользователей не найден");
+        }
+
+        if (!user.getFriends().contains(friendId)) {
+            log.warn("Пользователь с id={} не является другом пользователя с id={}", friendId, userId);
+            throw new NotFoundException("Пользователь с id=" + friendId + " не является другом пользователя с id=" + userId);
+        }
+
+        log.info("Друг {} пользователя {} удален.", friendId, userId);
+        user.deleteFriend(friendId);
+        friend.deleteFriend(userId);
     }
 
     @Override
     public void addingUser(User user) {
-        log.info("Пользователь " + user + "добавлен.");
+        log.info("Пользователь " + user + " добавлен.");
         userStorage.addingUser(user);
     }
 

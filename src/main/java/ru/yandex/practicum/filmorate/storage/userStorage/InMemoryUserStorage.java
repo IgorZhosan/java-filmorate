@@ -55,7 +55,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User getUser(Long userId) {
         if (users.containsKey(userId)) {
-            log.info("Пользователь " + userId + "возвращен.");
+            log.info("Пользователь " + userId + " возвращен.");
             return users.get(userId);
         } else {
             log.warn("Такого пользователя нет");
