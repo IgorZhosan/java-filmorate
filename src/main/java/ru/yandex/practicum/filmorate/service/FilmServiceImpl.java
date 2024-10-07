@@ -45,7 +45,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void updateFilm(Film film) {
-        if (filmStorage.getFilm((long) film.getId()) == null) {
+        if (!filmStorage.getAllFilm().contains(film.getId())) {
             throw new RuntimeException("фильм не найден");
         }
         filmStorage.updateFilm(film);
