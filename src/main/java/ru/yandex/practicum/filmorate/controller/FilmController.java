@@ -1,7 +1,8 @@
-package ru.yandex.practicum.filmorate.controller.filmController;
+package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -35,7 +36,17 @@ public class FilmController {
         return filmService.filmUpdate(film);
     }
 
+    @PutMapping("/{id}/like/{userId}") //добавление лайка
+    @ResponseStatus(HttpStatus.OK)
+    public Set<Long> addLike(@PathVariable @Positive Long id, @PathVariable("userId") @Positive Long idUser) {
+        return filmService.addLike(id, idUser);
+    }
 
+    @DeleteMapping("/{id}/like/{userId}") //удаление лайка
+    @ResponseStatus(HttpStatus.OK)
+    public Set<Long> deleteLike(@PathVariable @Positive Long id, @PathVariable("userId") @Positive Long idUser) {
+        return filmService.deleteLike(id, idUser);
+    }
 
     @GetMapping("/popular")  // получение списка лучших фильмов
     @ResponseStatus(HttpStatus.OK)
