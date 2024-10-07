@@ -37,6 +37,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(User user) {
+        if (userStorage.getUser((long) user.getId()) == null) {
+            throw new RuntimeException("Пользователь не найден");
+        }
         userStorage.updateUser(user);
     }
 
