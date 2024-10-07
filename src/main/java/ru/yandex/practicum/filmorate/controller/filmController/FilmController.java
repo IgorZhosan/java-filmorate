@@ -1,12 +1,11 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.controller.filmController;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -14,14 +13,14 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 @RestController
 @RequestMapping("/films")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FilmController {
-    private FilmService filmService;
+    private final FilmService filmService;
 
     @GetMapping //   получение списка фильмов
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getAllFilms() {
-        return filmService.getAllFilms();
+        return List.copyOf(filmService.getAllFilms());
     }
 
     @PostMapping() // для добавления нового фильма в список.
@@ -36,17 +35,7 @@ public class FilmController {
         return filmService.filmUpdate(film);
     }
 
-    @PutMapping("/{id}/like/{userId}") //добавление лайка
-    @ResponseStatus(HttpStatus.OK)
-    public Set<Long> addLike(@PathVariable @Positive Long id, @PathVariable("userId") @Positive Long idUser) {
-        return filmService.addLike(id, idUser);
-    }
 
-    @DeleteMapping("/{id}/like/{userId}") //удаление лайка
-    @ResponseStatus(HttpStatus.OK)
-    public Set<Long> deleteLike(@PathVariable @Positive Long id, @PathVariable("userId") @Positive Long idUser) {
-        return filmService.deleteLike(id, idUser);
-    }
 
     @GetMapping("/popular")  // получение списка лучших фильмов
     @ResponseStatus(HttpStatus.OK)

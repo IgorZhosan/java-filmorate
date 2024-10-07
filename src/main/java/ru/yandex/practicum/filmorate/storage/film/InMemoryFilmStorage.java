@@ -13,7 +13,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override   //получение списка фильмов
     public Collection<Film> getAllFilms() {
-        return films.values();
+        return List.copyOf(films.values());
     }
 
     @Override // для добавления нового фильма в список.

@@ -13,7 +13,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override //получение списка пользователей.
     public Collection<User> getAllUsers() {
-        return users.values();
+        return List.copyOf(users.values());
     }
 
     @Override // для добавления нового пользователя в список.
