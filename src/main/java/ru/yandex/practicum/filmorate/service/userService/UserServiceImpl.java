@@ -27,12 +27,14 @@ public class UserServiceImpl implements UserService {
     public void addFriend(Long userId, Long friendId) {
         log.info("Друг " + friendId + " пользователя " + userId + "добавлен.");
         userStorage.getUser(userId).setFriend(friendId);
+        userStorage.getUser(friendId).setFriend(userId);
     }
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
         log.info("Друг " + friendId + " пользователя " + userId + " удален.");
         userStorage.getUser(userId).deleteFriend(friendId);
+        userStorage.getUser(friendId).deleteFriend(userId);
     }
 
     @Override
