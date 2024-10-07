@@ -1,67 +1,64 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.userService.UserService;
-
-import java.util.List;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-@Validated
 public class UserController {
-
     private final UserService userService;
 
-    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @GetMapping
+    @GetMapping //получение списка пользователей.
     @ResponseStatus(HttpStatus.OK)
-    public List<User> getAllUsers() {
-        return userService.getAllUser();
+    public Collection<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
-    @PutMapping
-    @ResponseStatus(HttpStatus.OK)
-    public User refreshTheUser(@Valid @RequestBody User user) {
-        userService.validateUser(user);
-        userService.updateUser(user);
-        return userService.getUser((long) user.getId());
-    }
-
-    @PostMapping
+    @PostMapping() // для добавления нового пользователя в список.
     @ResponseStatus(HttpStatus.CREATED)
-    public User putTheUser(@Valid @RequestBody User user) {
-        userService.validateUser(user);
-        userService.addingUser(user);
-        return userService.getUser((long) user.getId());
+    public User userCreate(@Valid @RequestBody User user) { // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
+        return userService.userCreate(user);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable @Positive Long id, @PathVariable @Positive Long friendId) {
-        userService.addFriend(id, friendId);
-        return userService.getUser(id);
-    }
-
-    @DeleteMapping("/{id}/friends/{friendId}")
+    @PutMapping() //для обновления данных существующего пользователя.
     @ResponseStatus(HttpStatus.OK)
-    public User deleteFriend(@PathVariable @Positive Long id, @PathVariable @Positive Long friendId) {
-        userService.deleteFriend(id, friendId);
-        userService.deleteFriend(friendId, id);
-        return userService.getUser(id);
+    public User userUpdate(@Valid @RequestBody User user) {
+        return userService.userUpdate(user);
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}")
+    @PutMapping("/{id}/friends/{friendId}") //добавление пользователя в друзья
     @ResponseStatus(HttpStatus.OK)
-    public List<Long> getCommonFriends(@PathVariable @Positive Long id, @PathVariable @Positive Long otherId) {
-        return userService.findCommonFriends(id, otherId);
+    public Set<Long> addNewFriend(@PathVariable("id") @Positive Long idUser, @PathVariable("friendId") @Positive Long idFriend) {
+        return userService.addNewFriend(idUser, idFriend);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}") // удаление из друзей пользователя
+    @ResponseStatus(HttpStatus.OK)
+    public Set<Long> deleteFriend(@PathVariable("id") @Positive Long idUser, @PathVariable("friendId") @Positive Long idFriend) {
+        return userService.deleteFriend(idUser, idFriend);
+    }
+
+    @GetMapping("/{id}/friends") // получение списка друзей пользователя
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> getAllFriends(@PathVariable("id") @Positive Long idUser) {
+        return userService.getAllFriends(idUser);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей с пользователем
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> getCommonFriends(@PathVariable("id") @Positive Long idUser, @PathVariable("otherId") @Positive Long idOther) {
+        return userService.getCommonFriends(idUser, idOther);
     }
 }
