@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -32,37 +31,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Map<Long, User> getUsers() {
         return users;
-    }
-
-    @Override
-    public Set<Long> addNewFriend(Long idUser, Long idFriend) { //добавление пользователя в друзья
-        users.get(idUser).getFriends().add(idFriend);
-        users.get(idFriend).getFriends().add(idUser);
-        return users.get(idUser).getFriends();
-    }
-
-    @Override
-    public Set<Long> deleteFriend(Long idUser, Long idFriend) { // удаление из друзей пользователя
-        users.get(idUser).getFriends().remove(idFriend);
-        users.get(idFriend).getFriends().remove(idUser);
-        return users.get(idUser).getFriends();
-    }
-
-    @Override
-    public List<User> getAllFriends(Long idUser) { // получение списка друзей пользователя
-        return users.get(idUser).getFriends().stream()
-                .map(users::get)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<User> getCommonFriends(Long idUser, Long idOther) { // получение списка общих друзей с пользователем
-        Set<Long> user = users.get(idUser).getFriends();
-        Set<Long> userOther = users.get(idOther).getFriends();
-        return user.stream()
-                .filter(userOther::contains)
-                .map(users::get)
-                .collect(Collectors.toList());
     }
 
     private long getIdNext() {

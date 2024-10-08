@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -47,7 +48,7 @@ public class FilmService {
         return filmStorage.filmUpdate(film);
     }
 
-    public Set<Long> addLike(Long id, Long idUser) { //добавление лайка
+    public Set<Long> addLike(Long id, Long idUser) {
         if (!filmStorage.getFilms().containsKey(id)) {
             log.warn("Ошибка при добавлении лайка. Фильм с id {} не найден.", id);
             throw new NotFoundException("Ошибка при добавлении лайка. Фильм с id: " + id + " не найден.");
@@ -61,7 +62,8 @@ public class FilmService {
             throw new ValidationException("Ошибка при добавлении лайка. Пользователь уже поставил лайк.");
         }
         log.info("Пользователь с id {} добавил лайк к фильму с id {}.", idUser, id);
-        return filmStorage.addLike(id, idUser);
+        filmStorage.getFilms().get(id).getLikes().add(idUser);
+        return filmStorage.getFilms().get(id).getLikes();
     }
 
     public Set<Long> deleteLike(Long id, Long idUser) { // удаление лайка
@@ -74,18 +76,21 @@ public class FilmService {
             throw new NotFoundException("Ошибка при удалении лайка. Пользователь с id: " + idUser + " не найден.");
         }
         log.info("Пользователь с id {} удалил лайк к фильму с id {}.", idUser, id);
-        return filmStorage.deleteLike(id, idUser);
+        filmStorage.getFilms().get(id).getLikes().remove(idUser);
+        return filmStorage.getFilms().get(id).getLikes();
     }
 
-    public List<Film> getPopular(Long count) { // получение списка лучших фильмов
-        if (filmStorage.getFilms().isEmpty()) {
+    public List<Film> getPopular(Long count) {
+        Collection<Film> films = filmStorage.getAllFilms(); // Получаем все фильмы
+        if (films.isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
         }
-        if (filmStorage.getFilms().size() < count) {
-            return filmStorage.getPopular((long) filmStorage.getFilms().size());
-        }
-        return filmStorage.getPopular(count);
+        // Сортируем фильмы по количеству лайков в порядке убывания
+        return films.stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .limit(count) // Ограничиваем список указанным количеством
+                .collect(Collectors.toList());
     }
 
     private void filmValidate(Film film) {

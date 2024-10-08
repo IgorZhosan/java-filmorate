@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,8 +36,8 @@ public class UserService {
         log.info("Пользователь с id {} добавлен.", user.getId());
         return userStorage.userCreate(user);
     }
-
-    public User userUpdate(User user) { //для обновления данных существующего пользователя.
+    //для обновления данных существующего пользователя.
+    public User userUpdate(User user) {
         if (user.getId() == null || !userStorage.getUsers().containsKey(user.getId())) {
             log.warn("Пользователь с id {} не найден.", user.getId());
             throw new NotFoundException("Пользователь с id: " + user.getId() + " не найден.");
@@ -46,68 +47,85 @@ public class UserService {
         return userStorage.userUpdate(user);
     }
 
-    public Set<Long> addNewFriend(Long idUser, Long idFriend) { //добавление пользователя в друзья
+    public Set<Long> addNewFriend(Long idUser, Long idFriend) {
         if (!userStorage.getUsers().containsKey(idUser)) {
-            log.warn("Ошибка при добавлении в друзья. Пользователь с id {} не найден.", idUser);
-            throw new NotFoundException("Ошибка при добавлении в друзья. Пользователь с id: " + idUser + " не найден.");
+            log.warn("Ошибка при добавлении друга. Пользователь с id {} не найден.", idUser);
+            throw new NotFoundException("Пользователь с id: " + idUser + " не найден.");
         }
         if (!userStorage.getUsers().containsKey(idFriend)) {
-            log.warn("Ошибка при добавлении в друзья. Пользователь с id {} не найден.", idFriend);
-            throw new NotFoundException("Ошибка при добавлении в друзья. Пользователь с id: " + idFriend + " не найден.");
+            log.warn("Ошибка при добавлении друга. Друг с id {} не найден.", idFriend);
+            throw new NotFoundException("Друг с id: " + idFriend + " не найден.");
         }
-        if (userStorage.getUsers().get(idUser).getFriends().contains(idFriend) || userStorage.getUsers().get(idFriend).getFriends().contains(idUser)) {
-            log.warn("Ошибка при добавлении в друзья. Пользователь уже в друзьях.");
-            throw new ValidationException("Ошибка при добавлении в друзья. Пользователь уже в друзьях.");
-        }
-        if (idUser.equals(idFriend)) {
-            log.warn("Ошибка при добавлении в друзья. Id пользователей совпадают.");
-            throw new ValidationException("Ошибка при добавлении в друзья. Id пользователей совпадают.");
-        }
-        log.info("Пользователь с id {} добавлен в друзья к пользователю с id {}.", idFriend, idUser);
-        return userStorage.addNewFriend(idUser, idFriend);
+
+        User user = userStorage.getUsers().get(idUser);
+        User friend = userStorage.getUsers().get(idFriend);
+
+        user.getFriends().add(idFriend);
+        friend.getFriends().add(idUser);
+
+        log.info("Пользователь с id {} добавил в друзья пользователя с id {}.", idUser, idFriend);
+
+        userStorage.userUpdate(user);
+        userStorage.userUpdate(friend);
+
+        return user.getFriends();
     }
 
-    public Set<Long> deleteFriend(Long idUser, Long idFriend) { // удаление из друзей пользователя
+    public Set<Long> deleteFriend(Long idUser, Long idFriend) {
         if (!userStorage.getUsers().containsKey(idUser)) {
-            log.warn("Ошибка при удалении пользователя из друзей. Пользователь с id {} не найден.", idUser);
-            throw new NotFoundException("Ошибка при удалении пользователя из друзей. Пользователь с id: " + idUser + " не найден.");
+            log.warn("Ошибка при удалении друга. Пользователь с id {} не найден.", idUser);
+            throw new NotFoundException("Пользователь с id: " + idUser + " не найден.");
         }
         if (!userStorage.getUsers().containsKey(idFriend)) {
-            log.warn("Ошибка при удалении пользователя из друзей. Пользователь с id {} не найден.", idFriend);
-            throw new NotFoundException("Ошибка при удалении пользователя из друзей. Пользователь с id: " + idFriend + " не найден.");
+            log.warn("Ошибка при удалении друга. Друг с id {} не найден.", idFriend);
+            throw new NotFoundException("Друг с id: " + idFriend + " не найден.");
         }
-        if (idUser.equals(idFriend)) {
-            log.warn("Ошибка при удалении пользователя из друзей. Id пользователей совпадают.");
-            throw new ValidationException("Ошибка при удалении пользователя из друзей. Id пользователей совпадают.");
-        }
-        log.info("Пользователь с id {} удален из друзей пользователя с id {}.", idFriend, idUser);
-        return userStorage.deleteFriend(idUser, idFriend);
+
+        User user = userStorage.getUsers().get(idUser);
+        User friend = userStorage.getUsers().get(idFriend);
+
+        user.getFriends().remove(idFriend);
+        friend.getFriends().remove(idUser);
+
+        log.info("Пользователь с id {} удалил из друзей пользователя с id {}.", idUser, idFriend);
+
+        userStorage.userUpdate(user);
+        userStorage.userUpdate(friend);
+
+        return user.getFriends();
     }
 
-    public List<User> getAllFriends(Long idUser) { // получение списка друзей пользователя
+
+    public List<User> getAllFriends(Long idUser) {
         if (!userStorage.getUsers().containsKey(idUser)) {
-            log.warn("Ошибка получения списка друзей пользователя. Пользователь с id {} не найден.", idUser);
-            throw new NotFoundException("Ошибка получения списка друзей пользователя. Пользователь с id: " + idUser + " не найден.");
+            log.warn("Ошибка при получении списка друзей. Пользователь с id {} не найден.", idUser);
+            throw new NotFoundException("Пользователь с id: " + idUser + " не найден.");
         }
-        log.info("Получение списка друзей пользователя с id {}.", idUser);
-        return userStorage.getAllFriends(idUser);
+
+        User user = userStorage.getUsers().get(idUser);
+        return user.getFriends().stream()
+                .map(friendId -> userStorage.getUsers().get(friendId))
+                .collect(Collectors.toList());
     }
 
-    public List<User> getCommonFriends(Long idUser, Long idOther) { // получение списка общих друзей с пользователем
+
+    public List<User> getCommonFriends(Long idUser, Long idOther) {
         if (!userStorage.getUsers().containsKey(idUser)) {
             log.warn("Ошибка при получении списка общих друзей. Пользователь с id {} не найден.", idUser);
-            throw new NotFoundException("Ошибка при получении списка общих друзей. Пользователь с id: " + idUser + " не найден.");
+            throw new NotFoundException("Пользователь с id: " + idUser + " не найден.");
         }
         if (!userStorage.getUsers().containsKey(idOther)) {
             log.warn("Ошибка при получении списка общих друзей. Пользователь с id {} не найден.", idOther);
-            throw new NotFoundException("Ошибка при получении списка общих друзей. Пользователь с id: " + idOther + " не найден.");
+            throw new NotFoundException("Пользователь с id: " + idOther + " не найден.");
         }
-        if (idUser.equals(idOther)) {
-            log.warn("Ошибка при получении списка общих друзей. Id пользователей совпадают.");
-            throw new ValidationException("Ошибка при получении списка общих друзей. Id пользователей совпадают.");
-        }
-        log.info("Получение списка общих друзей у пользователя с id {} и пользователя с id {}.", idOther, idUser);
-        return userStorage.getCommonFriends(idUser, idOther);
+
+        Set<Long> userFriends = userStorage.getUsers().get(idUser).getFriends();
+        Set<Long> otherFriends = userStorage.getUsers().get(idOther).getFriends();
+
+        return userFriends.stream()
+                .filter(otherFriends::contains)
+                .map(friendId -> userStorage.getUsers().get(friendId))
+                .collect(Collectors.toList());
     }
 
     private void userValidate(User user) {
