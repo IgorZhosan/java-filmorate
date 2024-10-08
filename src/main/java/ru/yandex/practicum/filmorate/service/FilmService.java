@@ -33,7 +33,6 @@ public class FilmService {
             log.warn("Фильм с id {} уже добавлен в список.", film.getId());
             throw new DuplicatedDataException("Фильм уже добавлен.");
         }
-        filmValidate(film);
         log.info("Фильм с id {} добавлен в список.", film.getId());
         return filmStorage.filmCreate(film);
     }
@@ -43,7 +42,6 @@ public class FilmService {
             log.warn("Фильм с id {} не найден.", film.getId());
             throw new NotFoundException("Фильм с id: " + film.getId() + " не найден.");
         }
-        filmValidate(film);
         log.info("Фильм с id {} обновлен.", film.getId());
         return filmStorage.filmUpdate(film);
     }
@@ -91,12 +89,5 @@ public class FilmService {
                 .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .limit(count) // Ограничиваем список указанным количеством
                 .collect(Collectors.toList());
-    }
-
-    private void filmValidate(Film film) {
-        if (film.getName() == null) {
-            log.warn("Ошибка в названии фильма.");
-            throw new ValidationException("Название фильма задано некорректно.");
-        }
     }
 }

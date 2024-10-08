@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +30,6 @@ public class UserService {
             log.warn("Пользователь с id {} уже добавлен в список.", user.getId());
             throw new DuplicatedDataException("Этот пользователь уже существует.");
         }
-        userValidate(user);
         log.info("Пользователь с id {} добавлен.", user.getId());
         return userStorage.userCreate(user);
     }
@@ -43,7 +40,6 @@ public class UserService {
             log.warn("Пользователь с id {} не найден.", user.getId());
             throw new NotFoundException("Пользователь с id: " + user.getId() + " не найден.");
         }
-        userValidate(user);
         log.info("Пользователь с id {} обновлен.", user.getId());
         return userStorage.userUpdate(user);
     }
@@ -125,19 +121,5 @@ public class UserService {
                 .filter(otherFriends::contains)
                 .map(friendId -> userStorage.getUsers().get(friendId))
                 .collect(Collectors.toList());
-    }
-
-    private void userValidate(User user) {
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Ошибка в написании даты рождения.");
-            throw new ValidationException("Дата рождения не может быть задана в будущем.");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getLogin().contains(" ")) {
-            log.warn("Ошибка в написании логина.");
-            throw new ValidationException("Логин не должен содержать пробелы.");
-        }
     }
 }

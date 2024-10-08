@@ -24,9 +24,10 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
+    // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
     @PostMapping() // для добавления нового фильма в список.
     @ResponseStatus(HttpStatus.CREATED)
-    public Film filmCreate(@Valid @RequestBody Film film) { // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
+    public Film filmCreate(@Valid @RequestBody Film film) {
         return filmService.filmCreate(film);
     }
 
