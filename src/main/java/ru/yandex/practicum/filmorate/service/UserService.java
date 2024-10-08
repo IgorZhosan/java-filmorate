@@ -36,6 +36,7 @@ public class UserService {
         log.info("Пользователь с id {} добавлен.", user.getId());
         return userStorage.userCreate(user);
     }
+
     //для обновления данных существующего пользователя.
     public User userUpdate(User user) {
         if (user.getId() == null || !userStorage.getUsers().containsKey(user.getId())) {
@@ -95,7 +96,6 @@ public class UserService {
         return user.getFriends();
     }
 
-
     public List<User> getAllFriends(Long idUser) {
         if (!userStorage.getUsers().containsKey(idUser)) {
             log.warn("Ошибка при получении списка друзей. Пользователь с id {} не найден.", idUser);
@@ -107,7 +107,6 @@ public class UserService {
                 .map(friendId -> userStorage.getUsers().get(friendId))
                 .collect(Collectors.toList());
     }
-
 
     public List<User> getCommonFriends(Long idUser, Long idOther) {
         if (!userStorage.getUsers().containsKey(idUser)) {
