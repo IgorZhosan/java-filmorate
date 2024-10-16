@@ -16,7 +16,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 @RequestMapping("/films")
 @AllArgsConstructor
 public class FilmController {
-    private FilmService filmService;
+    private final FilmService filmService;
 
     @GetMapping //   получение списка фильмов
     @ResponseStatus(HttpStatus.OK)
