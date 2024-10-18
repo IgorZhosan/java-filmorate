@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -13,7 +10,7 @@ import java.util.Set;
 @Data
 public class User {
 
-    private Long id;
+    private Integer id;
 
     @NotBlank(message = "Имейл должен быть указан")
     @Email(message = "Имейл должен содержать символ «@». Формат имейла: example@mail.com")
@@ -23,10 +20,11 @@ public class User {
     @Pattern(regexp = "^\\S+$", message = "Логин не может содержать пробелы")
     private String login;
 
+    @Size(max = 255, message = "Максимальная длина - 255 символов")
     private String name;
 
     @PastOrPresent(message = "Дата рождения не может быть в будушем")
     private LocalDate birthday;
 
-    private final Set<Long> friends = new HashSet<>();
+    private final Set<Integer> friends = new HashSet<>();
 }
