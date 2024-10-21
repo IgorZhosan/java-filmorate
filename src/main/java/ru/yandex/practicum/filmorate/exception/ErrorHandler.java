@@ -15,28 +15,28 @@ public class ErrorHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class, ValidationException.class})
     //400
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidation(final Exception e) {
+    public ErrorResponse handleValidation(Exception e) {
         log.debug("Получен статус 400 Bad Request {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler //404
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(final NotFoundException e) {
+    public ErrorResponse handleNotFound(NotFoundException e) {
         log.debug("Получен статус 404 Not Found {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler //409
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleDuplicatedData(final DuplicatedDataException e) {
+    public ErrorResponse handleDuplicatedData(DuplicatedDataException e) {
         log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler //500
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleInternalServerError(final Throwable e) {
+    public ErrorResponse handleInternalServerError(Throwable e) {
         log.debug("Получен статус 500 Internal Server Error {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }

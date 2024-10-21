@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +13,6 @@ public class Genre {
     private Integer id;
 
     @Size(max = 200, message = "Максимальная длина 200 символов")
-    @NotNull
+    @NotBlank(message = "Название жанра не должно быть пустым")
     private String name;
 }

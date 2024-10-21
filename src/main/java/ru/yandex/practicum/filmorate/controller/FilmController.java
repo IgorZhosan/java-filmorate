@@ -26,32 +26,32 @@ public class FilmController {
 
     @PostMapping() // для добавления нового фильма в список.
     @ResponseStatus(HttpStatus.CREATED)
-    public Film filmCreate(@Valid @RequestBody final Film film) { // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
+    public Film filmCreate(@Valid @RequestBody Film film) { // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
         return filmService.filmCreate(film);
     }
 
     @PutMapping() //для обновления данных существующего фильма.
-    public Film filmUpdate(@Valid @RequestBody final Film film) {
+    public Film filmUpdate(@Valid @RequestBody Film film) {
         return filmService.filmUpdate(film);
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable @Positive @RequestBody final int id) {
+    public Film getFilmById(@PathVariable @Positive @RequestBody int id) {
         return filmService.getFilmById(id);
     }
 
     @PutMapping("/{id}/like/{userId}") //добавление лайка
-    public void addLike(@PathVariable @Positive final int id, @PathVariable @Positive final int userId) {
+    public void addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}") //удаление лайка
-    public void deleteLike(@PathVariable @Positive final int id, @PathVariable @Positive final int userId) {
+    public void deleteLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/popular")  // получение списка лучших фильмов
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive final int count) {
+    public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
         return filmService.getPopular(count);
     }
 }

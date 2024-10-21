@@ -41,27 +41,27 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film filmCreate(final Film film) { // для добавления нового фильма в список.
+    public Film filmCreate(Film film) { // для добавления нового фильма в список.
         if (filmStorage.getAllFilms().contains(film)) {
             log.warn("Фильм с id {} уже добавлен в список.", film.getId());
             throw new DuplicatedDataException("Фильм уже добавлен.");
         }
         Film filmGenre = filmValidate(film);
-        Film film1 = filmStorage.filmCreate(filmGenre);
+        Film filmNew = filmStorage.filmCreate(filmGenre);
         log.info("Фильм с id {} добавлен в список.", film.getId());
-        return film1;
+        return filmNew;
     }
 
     @Override
-    public Film filmUpdate(final Film film) { //для обновления данных существующего фильма.
+    public Film filmUpdate(Film film) { //для обновления данных существующего фильма.
         if (filmStorage.getFilmById(film.getId()).isEmpty()) {
             log.warn("Фильм с id {} не найден.", film.getId());
             throw new NotFoundException("Фильм с id: " + film.getId() + " не найден.");
         }
         Film filmGenre = filmValidate(film);
-        Film film1 = filmStorage.filmUpdate(filmGenre);
+        Film filmNew = filmStorage.filmUpdate(filmGenre);
         log.info("Фильм с id {} обновлен.", film.getId());
-        return film1;
+        return filmNew;
     }
 
     @Override

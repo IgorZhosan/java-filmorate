@@ -34,9 +34,9 @@ public class UserServiceImpl implements UserService {
             throw new DuplicatedDataException("Этот пользователь уже существует.");
         }
         userValidate(user);
-        User user1 = userStorage.userCreate(user);
+        User userNew = userStorage.userCreate(user);
         log.info("Пользователь с id {} добавлен.", user.getId());
-        return user1;
+        return userNew;
     }
 
     @Override
@@ -46,9 +46,9 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("Пользователь с id: " + user.getId() + " не найден.");
         }
         userValidate(user);
-        User user1 = userStorage.userUpdate(user);
+        User userNew = userStorage.userUpdate(user);
         log.info("Пользователь с id {} обновлен.", user.getId());
-        return user1;
+        return userNew;
     }
 
     @Override

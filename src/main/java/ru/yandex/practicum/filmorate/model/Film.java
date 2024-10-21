@@ -17,6 +17,8 @@ import java.util.Set;
 @Data
 public class Film {
 
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
+
     private Integer id;
 
     @Size(max = 255, message = "Максимальная длина - 255 символов")
@@ -27,7 +29,7 @@ public class Film {
     private String description;
 
     @DateReleaseValidation
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDate releaseDate;
 
     @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
@@ -37,5 +39,6 @@ public class Film {
 
     @NotNull
     private Mpa mpa;
+
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 }

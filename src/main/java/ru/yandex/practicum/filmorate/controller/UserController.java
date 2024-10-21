@@ -26,37 +26,37 @@ public class UserController {
 
     @PostMapping() // для добавления нового пользователя в список.
     @ResponseStatus(HttpStatus.CREATED)
-    public User userCreate(@Valid @RequestBody final User user) { // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
+    public User userCreate(@Valid @RequestBody User user) { // значение, которое будет передано в метод в качестве аргумента, нужно взять из тела запроса
         return userService.userCreate(user);
     }
 
     @PutMapping() //для обновления данных существующего пользователя.
-    public User userUpdate(@Valid @RequestBody final User user) {
+    public User userUpdate(@Valid @RequestBody User user) {
         return userService.userUpdate(user);
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable @Positive final int id) {
+    public User getUserById(@PathVariable @Positive int id) {
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}") //добавление пользователя в друзья
-    public void addNewFriend(@PathVariable("id") @Positive final int userId, @PathVariable @Positive final int friendId) {
+    public void addNewFriend(@PathVariable("id") @Positive int userId, @PathVariable @Positive int friendId) {
         userService.addNewFriend(userId, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}") // удаление из друзей пользователя
-    public void deleteFriend(@PathVariable("id") @Positive final int userId, @PathVariable @Positive final int friendId) {
+    public void deleteFriend(@PathVariable("id") @Positive int userId, @PathVariable @Positive int friendId) {
         userService.deleteFriend(userId, friendId);
     }
 
     @GetMapping("/{id}/friends") // получение списка друзей пользователя
-    public List<User> getAllFriends(@PathVariable("id") @Positive final int userId) {
+    public List<User> getAllFriends(@PathVariable("id") @Positive int userId) {
         return userService.getAllFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей с пользователем
-    public List<User> getCommonFriends(@PathVariable("id") @Positive final int userId, @PathVariable @Positive final int otherId) {
+    public List<User> getCommonFriends(@PathVariable("id") @Positive int userId, @PathVariable @Positive int otherId) {
         return userService.getCommonFriends(userId, otherId);
     }
 }
