@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -7,45 +8,36 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.NoSuchElementException;
-
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
 
-    @ExceptionHandler(ValidationException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class, ValidationException.class})
+    //400
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
-        return new ErrorResponse("Validation Error", e.getMessage());
+    public ErrorResponse handleValidation(Exception e) {
+        log.debug("Получен статус 400 Bad Request {}", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-        return new ErrorResponse("Validation Error", e.getMessage());
-    }
-
-    @ExceptionHandler(NotFoundException.class)
+    @ExceptionHandler //404
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(final NotFoundException e) {
-        return new ErrorResponse("Not Found Error", e.getMessage());
+    public ErrorResponse handleNotFound(NotFoundException e) {
+        log.debug("Получен статус 404 Not Found {}", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleException(final Exception e) {
-        return new ErrorResponse("Internal Server Error", e.getMessage());
-    }
-
-    @ExceptionHandler(DuplicatedDataException.class)
+    @ExceptionHandler //409
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleDuplicateException(final DuplicatedDataException e) {
-        return new ErrorResponse("Duplicate Server Error", e.getMessage());
+    public ErrorResponse handleDuplicatedData(DuplicatedDataException e) {
+        log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNoSuchElementException(final NoSuchElementException e) {
-        return new ErrorResponse("Not Found Error", e.getMessage());
+    @ExceptionHandler //500
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleInternalServerError(Throwable e) {
+        log.debug("Получен статус 500 Internal Server Error {}", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
     }
 }
