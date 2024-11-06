@@ -6,11 +6,13 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -107,5 +109,14 @@ public class UserServiceImpl implements UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    @Override
+    public Set<Film> getRecommendations(int userId) {
+        // Проверяем, существует ли пользователь с указанным ID
+        getUserById(userId);
+
+        // Получаем рекомендации из хранилища
+        return userStorage.getRecommendations(userId);
     }
 }
