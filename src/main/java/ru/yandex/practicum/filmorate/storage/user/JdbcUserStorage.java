@@ -132,10 +132,10 @@ public class JdbcUserStorage implements UserStorage {
             JOIN likes other_l ON user_l.film_id = other_l.film_id
             WHERE user_l.user_id = :userId AND other_l.user_id != :userId
             GROUP BY other_l.user_id
-            HAVING COUNT(DISTINCT other_l.film_id) > 1
+            HAVING COUNT(DISTINCT other_l.film_id) > 0
         )
         AND f.film_id NOT IN (SELECT film_id FROM likes WHERE user_id = :userId)
-        GROUP BY f.film_id, g.genre_id;
+        GROUP BY f.film_id;
     """;
 
         Map<String, Object> params = Map.of("userId", userId);

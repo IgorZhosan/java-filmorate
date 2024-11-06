@@ -63,9 +63,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/recommendations")
-    public Set<Film> getRecommendations(@PathVariable @Positive int id) {
+    public Set<Film> getRecommendations(@PathVariable("id") @Positive int id) {
         return userService.getRecommendations(id);
     }
-
 }
 

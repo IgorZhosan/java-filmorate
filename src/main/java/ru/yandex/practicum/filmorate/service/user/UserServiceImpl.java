@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -113,10 +114,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Set<Film> getRecommendations(int userId) {
-        // Проверяем, существует ли пользователь с указанным ID
+        log.info("Получение рекомендаций для пользователя с id {}", userId);
+
         getUserById(userId);
 
-        // Получаем рекомендации из хранилища
-        return userStorage.getRecommendations(userId);
+        Set<Film> recommendations = userStorage.getRecommendations(userId);
+
+        if (recommendations.isEmpty()) {
+            log.info("Нет рекомендаций для пользователя с id {}", userId);
+            return Collections.emptySet();
+        }
+
+        log.info("Найдено {} рекомендаций для пользователя с id {}", recommendations.size(), userId);
+        return recommendations;
     }
 }
