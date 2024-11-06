@@ -8,7 +8,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.extractor.FilmExtractor;
+import ru.yandex.practicum.filmorate.storage.film.extractor.FilmsExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UserExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UsersExtractor;
 
@@ -20,7 +20,7 @@ public class JdbcUserStorage implements UserStorage {
     private final NamedParameterJdbcOperations jdbc;
     private final UserExtractor userExtractor;
     private final UsersExtractor usersExtractor;
-    private final FilmExtractor filmExtractor;
+    private final FilmsExtractor filmsExtractor;
 
     @Override //получение списка пользователей.
     public Collection<User> getAllUsers() {
@@ -120,9 +120,12 @@ public class JdbcUserStorage implements UserStorage {
     @Override
     public Set<Film> getRecommendations(int userId) {
         String sql = """
-        SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name
+        SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name, g.genre_id, g.genre_name
         FROM films f
         JOIN likes l ON f.film_id = l.film_id
+        LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+        LEFT JOIN genres g ON fg.genre_id = g.genre_id
+        LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
         WHERE l.user_id IN (
             SELECT other_l.user_id
             FROM likes user_l
@@ -132,14 +135,12 @@ public class JdbcUserStorage implements UserStorage {
             HAVING COUNT(DISTINCT other_l.film_id) > 1
         )
         AND f.film_id NOT IN (SELECT film_id FROM likes WHERE user_id = :userId)
-        GROUP BY f.film_id;
+        GROUP BY f.film_id, g.genre_id;
     """;
 
         Map<String, Object> params = Map.of("userId", userId);
 
-        List<Film> films = Collections.singletonList(jdbc.query(sql, params, filmExtractor));
-
-        return new HashSet<>(films);
+        Map<Integer, Film> filmsMap = jdbc.query(sql, params, filmsExtractor);
+        return new HashSet<>(filmsMap.values());
     }
-
 }
