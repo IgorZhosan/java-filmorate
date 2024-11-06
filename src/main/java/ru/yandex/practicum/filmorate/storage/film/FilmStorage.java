@@ -22,6 +22,13 @@ public interface FilmStorage {
     List<Integer> getAllId();
 
     void deleteFilm(final int filmId); //удаление фильма по id
+
+    void deleteGenresByFilmId(int filmId);
+
+    void deleteLikesByFilmId(int filmId);
+
+
+
 }
 
 

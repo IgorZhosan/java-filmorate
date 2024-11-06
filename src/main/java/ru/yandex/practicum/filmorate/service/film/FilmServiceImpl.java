@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -32,12 +33,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> getAllFilms() { //   получение списка фильмов
+    public List<Film> getAllFilms() { //   получение списка фильмов
         log.info("Получение списка всех фильмов.");
         if (filmStorage.getAllFilms().isEmpty()) {
             return new ArrayList<>();
         }
-        return filmStorage.getAllFilms();
+        return (List<Film>) filmStorage.getAllFilms();
     }
 
     @Override
@@ -105,14 +106,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    @Transactional
     public void deleteFilm(final int id) {
         log.info("Удаление фильма с id {}", id);
-        if (filmStorage.getFilmById(id).isEmpty()) {
-            throw new NotFoundException("Фильм с id " + id + " не найден.");
-        }
+
+        // Проверяем, что фильм существует перед удалением
+        filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id " + id + " не найден."));
+
+        // Удаляем связанные жанры и лайки
+        filmStorage.deleteGenresByFilmId(id);
+        filmStorage.deleteLikesByFilmId(id);
+
+        // Удаляем сам фильм
         filmStorage.deleteFilm(id);
     }
-
 
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {
@@ -134,6 +141,4 @@ public class FilmServiceImpl implements FilmService {
         }
         return film;
     }
-
-
 }

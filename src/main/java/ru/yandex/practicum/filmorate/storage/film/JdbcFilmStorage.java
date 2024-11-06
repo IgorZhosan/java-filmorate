@@ -104,20 +104,19 @@ public class JdbcFilmStorage implements FilmStorage {
         jdbc.update(sql, Map.of("film_id", id, "user_id", userId));
     }
 
-    @Override // получение списка лучших фильмов
-    public List<Film> getPopular(final int count) {
+    @Override
+    public List<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, " +
-                "fg.genre_id, g.genre_name, " +
-                "COUNT(DISTINCT l.user_id) AS like_count " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id, fg.genre_id " +
+                "GROUP BY f.film_id " +
                 "ORDER BY like_count DESC " +
                 "LIMIT :count;";
+
 
         Map<Integer, Film> films = jdbc.query(sql, Map.of("count", count), filmsExtractor);
         assert films != null;
@@ -149,8 +148,28 @@ public class JdbcFilmStorage implements FilmStorage {
 
     @Override
     public void deleteFilm(final int filmId) {
-        String sql = "DELETE FROM films WHERE film_id = :film_id";
+        // Удаляем все записи из film_genres, связанные с данным фильмом
+        String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = :film_id";
+        jdbc.update(deleteGenresSql, Map.of("film_id", filmId));
+
+        // Удаляем все лайки, связанные с данным фильмом
+        String deleteLikesSql = "DELETE FROM likes WHERE film_id = :film_id";
+        jdbc.update(deleteLikesSql, Map.of("film_id", filmId));
+
+        // Удаляем сам фильм из таблицы films
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = :film_id";
+        jdbc.update(deleteFilmSql, Map.of("film_id", filmId));
+    }
+
+    @Override
+    public void deleteGenresByFilmId(final int filmId) {
+        String sql = "DELETE FROM film_genres WHERE film_id = :film_id";
         jdbc.update(sql, Map.of("film_id", filmId));
     }
 
+    @Override
+    public void deleteLikesByFilmId(final int filmId) {
+        String sql = "DELETE FROM likes WHERE film_id = :film_id";
+        jdbc.update(sql, Map.of("film_id", filmId));
+    }
 }
