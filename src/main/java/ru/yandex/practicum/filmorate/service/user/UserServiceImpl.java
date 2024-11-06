@@ -103,6 +103,16 @@ public class UserServiceImpl implements UserService {
         return listFriends;
     }
 
+    @Override
+    public void deleteUser(final int id) {
+        log.info("Удаление пользователя с id {}", id);
+        if (userStorage.getUserById(id).isEmpty()) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
+        }
+        userStorage.deleteUser(id);
+    }
+
+
     private void userValidate(final User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());

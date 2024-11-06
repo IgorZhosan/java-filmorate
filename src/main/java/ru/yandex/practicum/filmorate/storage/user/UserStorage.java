@@ -21,5 +21,7 @@ public interface UserStorage {
 
     List<User> getAllFriends(int userId); // получение списка друзей пользователя
 
+    void deleteUser(final int userId); //удаление юзера по id
+
     List<User> getCommonFriends(int userId, int otherId); // получение списка общих друзей с пользователем
 }

@@ -100,6 +100,13 @@ public class JdbcUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUser(final int userId) {
+        String sql = "DELETE FROM users WHERE user_id = :user_id";
+        jdbc.update(sql, Map.of("user_id", userId));
+    }
+
+
+    @Override
     public List<User> getCommonFriends(final int userId, final int otherId) { // получение списка общих друзей с пользователем
         String sql = "SELECT * " +
                 "FROM users " +
@@ -113,4 +120,6 @@ public class JdbcUserStorage implements UserStorage {
 
         return jdbc.query(sql, Map.of("user_id", userId, "other_id", otherId), usersExtractor);
     }
+
+
 }

@@ -104,6 +104,16 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getPopular(count);
     }
 
+    @Override
+    public void deleteFilm(final int id) {
+        log.info("Удаление фильма с id {}", id);
+        if (filmStorage.getFilmById(id).isEmpty()) {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+        filmStorage.deleteFilm(id);
+    }
+
+
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {
             film.setMpa(mpaStorage.getMpaById(film.getMpa().getId())
@@ -124,4 +134,6 @@ public class FilmServiceImpl implements FilmService {
         }
         return film;
     }
+
+
 }

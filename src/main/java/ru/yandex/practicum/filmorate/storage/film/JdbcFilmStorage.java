@@ -146,4 +146,11 @@ public class JdbcFilmStorage implements FilmStorage {
         jdbc.batchUpdate(sqlDelete, batch);
         jdbc.batchUpdate(sqlInsert, batch);
     }
+
+    @Override
+    public void deleteFilm(final int filmId) {
+        String sql = "DELETE FROM films WHERE film_id = :film_id";
+        jdbc.update(sql, Map.of("film_id", filmId));
+    }
+
 }
