@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 public class FilmsExtractor implements ResultSetExtractor<Map<Integer, Film>> {
@@ -21,21 +20,29 @@ public class FilmsExtractor implements ResultSetExtractor<Map<Integer, Film>> {
 
         while (rs.next()) {
             int filmId = rs.getInt("film_id");
-            if (Objects.nonNull(films.get(filmId))) {
-                films.get(filmId)
-                        .getGenres()
-                        .add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
+            Film film = films.get(filmId);
+
+            if (film != null) {
+                int genreId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    film.getGenres().add(new Genre(genreId, rs.getString("genre_name")));
+                }
                 continue;
             }
 
-            Film film = new Film();
+            film = new Film();
+            film.setId(filmId);
             film.setName(rs.getString("name"));
             film.setDescription(rs.getString("description"));
             film.setReleaseDate(rs.getDate("release_date").toLocalDate());
             film.setDuration(rs.getInt("duration"));
-            film.setId(rs.getInt("film_id"));
             film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
-            film.getGenres().add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
+
+            int genreId = rs.getInt("genre_id");
+            if (!rs.wasNull()) {
+                film.getGenres().add(new Genre(genreId, rs.getString("genre_name")));
+            }
+
             films.put(filmId, film);
         }
         return films;
