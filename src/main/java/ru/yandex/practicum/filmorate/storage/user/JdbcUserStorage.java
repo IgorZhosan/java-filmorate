@@ -139,8 +139,8 @@ public class JdbcUserStorage implements UserStorage {
     """;
 
         Map<String, Object> params = Map.of("userId", userId);
-
         Map<Integer, Film> filmsMap = jdbc.query(sql, params, filmsExtractor);
+
         return new HashSet<>(filmsMap.values());
     }
 }
