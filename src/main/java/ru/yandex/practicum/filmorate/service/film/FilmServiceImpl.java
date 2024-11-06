@@ -33,12 +33,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getAllFilms() { //   получение списка фильмов
+    public Collection<Film> getAllFilms() { //   получение списка фильмов
         log.info("Получение списка всех фильмов.");
         if (filmStorage.getAllFilms().isEmpty()) {
             return new ArrayList<>();
         }
-        return (List<Film>) filmStorage.getAllFilms();
+        return filmStorage.getAllFilms();
     }
 
     @Override
