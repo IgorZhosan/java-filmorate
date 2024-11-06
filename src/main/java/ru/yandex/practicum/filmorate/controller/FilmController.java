@@ -50,9 +50,15 @@ public class FilmController {
         filmService.deleteLike(id, userId);
     }
 
-    @GetMapping("/popular")  // получение списка лучших фильмов
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
-        return filmService.getPopular(count);
+    @GetMapping("/popular")
+    public List<Film> getMostPopularFilms(
+            @RequestParam(value = "count", required = false, defaultValue = "10") int count,
+            @RequestParam(value = "genreId", required = false) Integer genreId,
+            @RequestParam(value = "year", required = false) Integer year) {
+        if (genreId == null || year == null) {
+            return filmService.getPopular(count);
+        }
+        return filmService.getMostPopularFilms(count, genreId, year);
     }
 }
 

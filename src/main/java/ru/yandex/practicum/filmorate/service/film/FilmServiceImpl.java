@@ -104,6 +104,18 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getPopular(count);
     }
 
+    @Override
+    public List<Film> getMostPopularFilms(int count, int genreId, int year) { // получение списка лучших фильмов по жанру и году
+        if (filmStorage.getAllFilms().isEmpty()) {
+            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
+            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
+        }
+        if (filmStorage.getAllFilms().size() < count) {
+            return filmStorage.getMostPopularFilms(filmStorage.getAllFilms().size(), genreId, year);
+        }
+        return filmStorage.getMostPopularFilms(count, genreId, year);
+    }
+
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {
             film.setMpa(mpaStorage.getMpaById(film.getMpa().getId())

@@ -20,6 +20,8 @@ public interface FilmStorage {
     List<Film> getPopular(int count); // получение списка лучших фильмов
 
     List<Integer> getAllId();
+
+    List<Film> getMostPopularFilms(int count, int genreId, int year); // получение списка лучших фильмов по жанру и году
 }
 
 
