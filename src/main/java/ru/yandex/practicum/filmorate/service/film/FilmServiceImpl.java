@@ -99,9 +99,6 @@ public class FilmServiceImpl implements FilmService {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
         }
-        if (filmStorage.getAllFilms().size() < count) {
-            return filmStorage.getPopular(filmStorage.getAllFilms().size());
-        }
         return filmStorage.getPopular(count);
     }
 
@@ -110,18 +107,23 @@ public class FilmServiceImpl implements FilmService {
     public void deleteFilm(final int id) {
         log.info("Начало удаления фильма с id {}", id);
 
-        filmStorage.getFilmById(id).orElseThrow(() ->
+        Film film = filmStorage.getFilmById(id).orElseThrow(() ->
                 new NotFoundException("Фильм с id " + id + " не найден.")
         );
 
-        log.info("Удаление всех связанных жанров и лайков для фильма с id {}", id);
+        log.info("Фильм найден: {}", film);
+
+        log.info("Удаление всех связанных жанров для фильма с id {}", id);
         filmStorage.deleteGenresByFilmId(id);
+
+        log.info("Удаление всех связанных лайков для фильма с id {}", id);
         filmStorage.deleteLikesByFilmId(id);
 
         log.info("Удаление фильма с id {}", id);
         filmStorage.deleteFilm(id);
-    }
 
+        log.info("Фильм с id {} успешно удален", id);
+    }
 
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {

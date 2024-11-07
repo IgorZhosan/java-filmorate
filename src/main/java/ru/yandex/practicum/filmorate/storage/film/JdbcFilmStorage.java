@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.extractor.FilmExtractor;
@@ -122,11 +123,16 @@ public class JdbcFilmStorage implements FilmStorage {
                 "ORDER BY like_count DESC " +
                 "LIMIT " + count;
 
+        log.info("Выполнение запроса для получения популярных фильмов с ограничением: {}", count);
+
         Map<Integer, Film> films = jdbcTemplate.query(sql, filmsExtractor);
 
-        if (films == null) {
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы не найдены или список пуст.");
             return new ArrayList<>();
         }
+
+        log.info("Количество популярных фильмов: {}", films.size());
         return new ArrayList<>(films.values());
     }
 
@@ -153,6 +159,7 @@ public class JdbcFilmStorage implements FilmStorage {
     }
 
     @Override
+    @Transactional
     public void deleteFilm(final int filmId) {
         // Удаляем все записи из film_genres, связанные с данным фильмом
         String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = :film_id";
