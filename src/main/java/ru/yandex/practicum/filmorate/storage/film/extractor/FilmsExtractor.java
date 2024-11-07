@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film.extractor;
 
-import org.springframework.dao.DataAccessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,33 +11,38 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
+@Slf4j
 public class FilmsExtractor implements ResultSetExtractor<Map<Integer, Film>> {
     @Override
-    public Map<Integer, Film> extractData(final ResultSet rs) throws SQLException, DataAccessException {
+    public Map<Integer, Film> extractData(final ResultSet rs) throws SQLException {
         Map<Integer, Film> films = new LinkedHashMap<>();
 
         while (rs.next()) {
             int filmId = rs.getInt("film_id");
-            if (Objects.nonNull(films.get(filmId))) {
-                films.get(filmId)
-                        .getGenres()
-                        .add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
-                continue;
+            Film film = films.get(filmId);
+
+            if (film == null) {
+                film = new Film();
+                film.setId(filmId);
+                film.setName(rs.getString("name"));
+                film.setDescription(rs.getString("description"));
+                film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                film.setDuration(rs.getInt("duration"));
+                film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
+                films.put(filmId, film);
+
+                log.info("Добавлен фильм с id {} в рекомендации: {}", filmId, film);
             }
 
-            Film film = new Film();
-            film.setName(rs.getString("name"));
-            film.setDescription(rs.getString("description"));
-            film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-            film.setDuration(rs.getInt("duration"));
-            film.setId(rs.getInt("film_id"));
-            film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
-            film.getGenres().add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
-            films.put(filmId, film);
+            int genreId = rs.getInt("genre_id");
+            if (!rs.wasNull()) {
+                film.getGenres().add(new Genre(genreId, rs.getString("genre_name")));
+            }
         }
+
+        log.info("Итоговое количество фильмов в рекомендациях: {}", films.size());
         return films;
     }
 }
