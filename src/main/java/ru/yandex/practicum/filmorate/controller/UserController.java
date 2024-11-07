@@ -67,11 +67,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable int id) {
         userService.deleteUser(id);
+    }
 
     @GetMapping("/{id}/recommendations")
     public Set<Film> getRecommendations(@PathVariable("id") @Positive int id) {
         return userService.getRecommendations(id);
-
     }
 }
 
