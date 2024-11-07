@@ -108,18 +108,20 @@ public class FilmServiceImpl implements FilmService {
     @Override
     @Transactional
     public void deleteFilm(final int id) {
-        log.info("Удаление фильма с id {}", id);
+        log.info("Начало удаления фильма с id {}", id);
 
-        // Проверяем, что фильм существует перед удалением
-        filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id " + id + " не найден."));
+        filmStorage.getFilmById(id).orElseThrow(() ->
+                new NotFoundException("Фильм с id " + id + " не найден.")
+        );
 
-        // Удаляем связанные жанры и лайки
+        log.info("Удаление всех связанных жанров и лайков для фильма с id {}", id);
         filmStorage.deleteGenresByFilmId(id);
         filmStorage.deleteLikesByFilmId(id);
 
-        // Удаляем сам фильм
+        log.info("Удаление фильма с id {}", id);
         filmStorage.deleteFilm(id);
     }
+
 
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {
