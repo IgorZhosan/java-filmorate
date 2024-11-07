@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
@@ -17,7 +19,9 @@ import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class JdbcFilmStorage implements FilmStorage {
+    @Autowired
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcOperations jdbc;
     private final FilmExtractor filmExtractor;
@@ -107,21 +111,23 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "g.genre_id, g.genre_name " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name, g.genre_id, g.genre_name " +
                 "ORDER BY like_count DESC " +
-                "LIMIT :count;";
+                "LIMIT " + count;
 
+        Map<Integer, Film> films = jdbcTemplate.query(sql, filmsExtractor);
 
-        Map<Integer, Film> films = jdbc.query(sql, Map.of("count", count), filmsExtractor);
-        assert films != null;
-
-        return films.values().stream().toList();
+        if (films == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(films.values());
     }
 
     @Override
