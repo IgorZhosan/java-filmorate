@@ -103,6 +103,21 @@ public class JdbcUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUser(final int userId) {
+        // Удаляем все записи, связанные с пользователем, из таблицы friends
+        String deleteFriendsSql = "DELETE FROM friends WHERE user_id = :user_id OR friend_id = :user_id";
+        jdbc.update(deleteFriendsSql, Map.of("user_id", userId));
+
+        // Удаляем все записи, связанные с пользователем, из таблицы likes
+        String deleteLikesSql = "DELETE FROM likes WHERE user_id = :user_id";
+        jdbc.update(deleteLikesSql, Map.of("user_id", userId));
+
+        // Удаляем самого пользователя из таблицы users
+        String deleteUserSql = "DELETE FROM users WHERE user_id = :user_id";
+        jdbc.update(deleteUserSql, Map.of("user_id", userId));
+    }
+
+    @Override
     public List<User> getCommonFriends(final int userId, final int otherId) { // получение списка общих друзей с пользователем
         String sql = "SELECT * " +
                 "FROM users " +

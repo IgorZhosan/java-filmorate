@@ -24,6 +24,8 @@ public interface UserService {
 
     List<User> getCommonFriends(int userId, int otherId);
 
-    Set<Film> getRecommendations(int userId);
 
+    void deleteUser(final int id);
+
+    Set<Film> getRecommendations(int userId);
 }

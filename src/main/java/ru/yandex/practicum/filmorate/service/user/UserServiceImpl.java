@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -104,6 +105,22 @@ public class UserServiceImpl implements UserService {
         List<User> listFriends = userStorage.getCommonFriends(userId, otherId);
         log.info("Получение списка общих друзей у пользователя с id {} и пользователя с id {}.", otherId, userId);
         return listFriends;
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(final int id) {
+        log.info("Начало удаления пользователя с id {}", id);
+
+        userStorage.getUserById(id).orElseThrow(() ->
+                new NotFoundException("Пользователь с id " + id + " не найден.")
+        );
+
+        log.info("Удаление всех связанных друзей и лайков для пользователя с id {}", id);
+        userStorage.deleteFriend(id, id);  // Удаляем все связи с друзьями
+        userStorage.deleteUser(id);
+
+        log.info("Пользователь с id {} успешно удален", id);
     }
 
     private void userValidate(final User user) {
