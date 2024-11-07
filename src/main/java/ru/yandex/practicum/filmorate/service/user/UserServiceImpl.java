@@ -7,11 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -124,5 +127,22 @@ public class UserServiceImpl implements UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    @Override
+    public Set<Film> getRecommendations(int userId) {
+        log.info("Получение рекомендаций для пользователя с id {}", userId);
+
+        getUserById(userId);
+
+        Set<Film> recommendations = userStorage.getRecommendations(userId);
+
+        if (recommendations.isEmpty()) {
+            log.info("Нет рекомендаций для пользователя с id {}", userId);
+            return Collections.emptySet();
+        }
+
+        log.info("Найдено {} рекомендаций для пользователя с id {}", recommendations.size(), userId);
+        return recommendations;
     }
 }

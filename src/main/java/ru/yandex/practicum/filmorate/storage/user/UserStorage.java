@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserStorage {
     Collection<User> getAllUsers(); //получение списка пользователей
@@ -24,4 +26,7 @@ public interface UserStorage {
     void deleteUser(final int userId); //удаление юзера по id
 
     List<User> getCommonFriends(int userId, int otherId); // получение списка общих друзей с пользователем
+
+    Set<Film> getRecommendations(int userId); // получения рекомендаций
+
 }
