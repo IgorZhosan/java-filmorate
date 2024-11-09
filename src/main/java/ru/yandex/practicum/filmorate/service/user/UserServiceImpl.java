@@ -3,14 +3,18 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -103,9 +107,42 @@ public class UserServiceImpl implements UserService {
         return listFriends;
     }
 
+    @Override
+    @Transactional
+    public void deleteUser(final int id) {
+        log.info("Начало удаления пользователя с id {}", id);
+
+        userStorage.getUserById(id).orElseThrow(() ->
+                new NotFoundException("Пользователь с id " + id + " не найден.")
+        );
+
+        log.info("Удаление всех связанных друзей и лайков для пользователя с id {}", id);
+        userStorage.deleteFriend(id, id);  // Удаляем все связи с друзьями
+        userStorage.deleteUser(id);
+
+        log.info("Пользователь с id {} успешно удален", id);
+    }
+
     private void userValidate(final User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    @Override
+    public Set<Film> getRecommendations(int userId) {
+        log.info("Получение рекомендаций для пользователя с id {}", userId);
+
+        getUserById(userId);
+
+        Set<Film> recommendations = userStorage.getRecommendations(userId);
+
+        if (recommendations.isEmpty()) {
+            log.info("Нет рекомендаций для пользователя с id {}", userId);
+            return Collections.emptySet();
+        }
+
+        log.info("Найдено {} рекомендаций для пользователя с id {}", recommendations.size(), userId);
+        return recommendations;
     }
 }

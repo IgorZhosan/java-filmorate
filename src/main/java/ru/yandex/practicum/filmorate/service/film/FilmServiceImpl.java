@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -102,6 +103,29 @@ public class FilmServiceImpl implements FilmService {
             return filmStorage.getPopular(filmStorage.getAllFilms().size());
         }
         return filmStorage.getPopular(count);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFilm(final int id) {
+        log.info("Начало удаления фильма с id {}", id);
+
+        Film film = filmStorage.getFilmById(id).orElseThrow(() ->
+                new NotFoundException("Фильм с id " + id + " не найден.")
+        );
+
+        log.info("Фильм найден: {}", film);
+
+        log.info("Удаление всех связанных жанров для фильма с id {}", id);
+        filmStorage.deleteGenresByFilmId(id);
+
+        log.info("Удаление всех связанных лайков для фильма с id {}", id);
+        filmStorage.deleteLikesByFilmId(id);
+
+        log.info("Удаление фильма с id {}", id);
+        filmStorage.deleteFilm(id);
+
+        log.info("Фильм с id {} успешно удален", id);
     }
 
     @Override
