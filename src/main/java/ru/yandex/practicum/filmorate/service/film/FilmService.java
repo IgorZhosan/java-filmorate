@@ -20,7 +20,11 @@ public interface FilmService {
 
     List<Film> getPopular(int count);
 
-    List<Film> getMostPopularFilms(int count, int genreId, int year);
+    List<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year);
+
+    List<Film> getMostPopularFilmsByYear(int count, int year);
+
+    List<Film> getMostPopularFilmsByGenre(int count, int genreId);
 
     void deleteFilm(final int id);
 }

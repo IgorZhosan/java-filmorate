@@ -55,10 +55,16 @@ public class FilmController {
             @RequestParam(value = "count", required = false, defaultValue = "10") int count,
             @RequestParam(value = "genreId", required = false) Integer genreId,
             @RequestParam(value = "year", required = false) Integer year) {
-        if (genreId == null || year == null) {
+        if (genreId == null & year == null) {
             return filmService.getPopular(count);
         }
-        return filmService.getMostPopularFilms(count, genreId, year);
+        if (genreId == null) {
+            return filmService.getMostPopularFilmsByYear(count, year);
+        }
+        if (year == null) {
+            return filmService.getMostPopularFilmsByGenre(count, genreId);
+        }
+        return filmService.getMostPopularFilmsByGenreAndYear(count, genreId, year);
     }
 
     @DeleteMapping("/{id}")
