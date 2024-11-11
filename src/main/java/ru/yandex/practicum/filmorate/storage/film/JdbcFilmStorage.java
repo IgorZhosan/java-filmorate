@@ -29,17 +29,29 @@ public class JdbcFilmStorage implements FilmStorage {
     private final FilmExtractor filmExtractor;
     private final FilmsExtractor filmsExtractor;
 
-    @Override   //получение списка фильмов
+    @Override
     public Collection<Film> getAllFilms() {
-        String sql = "SELECT * " +
-                "FROM films f " +
-                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON fg.genre_id = g.genre_id; ";
+        log.info("Получение списка всех фильмов.");
+        String sql = """
+             SELECT f.film_id, f.name, f.description, f.release_date, f.duration, 
+                    f.mpa_id, m.mpa_name, 
+                    g.genre_id, g.genre_name, 
+                    d.director_id, d.name AS director_name
+             FROM films f 
+             LEFT JOIN mpa m ON f.mpa_id = m.mpa_id 
+             LEFT JOIN film_genres fg ON f.film_id = fg.film_id 
+             LEFT JOIN genres g ON fg.genre_id = g.genre_id 
+             LEFT JOIN film_directors fd ON f.film_id = fd.film_id 
+             LEFT JOIN directors d ON fd.director_id = d.director_id;
+             """;
         Map<Integer, Film> films = jdbc.query(sql, Map.of(), filmsExtractor);
-        assert films != null;
+        if (films == null || films.isEmpty()) {
+            log.warn("Фильмы не найдены или результат пуст");
+            return Collections.emptyList();
+        }
 
-        return films.values().stream().toList();
+        log.info("Количество фильмов, полученных из БД: {}", films.size());
+        return new ArrayList<>(films.values());
     }
 
     @Override // для добавления нового фильма в список.
@@ -124,27 +136,23 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
-                "g.genre_id, g.genre_name " +
+                "f.mpa_id, m.mpa_name, COUNT(l.user_id) AS like_count " +
                 "FROM films AS f " +
-                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name, g.genre_id, g.genre_name " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name " +
                 "ORDER BY like_count DESC " +
                 "LIMIT " + count;
 
-        log.info("Выполнение запроса для получения популярных фильмов с ограничением: {}", count);
+        log.info("Executing SQL for popular films: {}", sql);
 
         Map<Integer, Film> films = jdbcTemplate.query(sql, filmsExtractor);
-
         if (films == null || films.isEmpty()) {
-            log.info("Популярные фильмы не найдены или список пуст.");
+            log.info("No popular films found.");
             return new ArrayList<>();
         }
 
-        log.info("Количество популярных фильмов: {}", films.size());
+        log.info("Number of popular films retrieved: {}", films.size());
         return new ArrayList<>(films.values());
     }
 

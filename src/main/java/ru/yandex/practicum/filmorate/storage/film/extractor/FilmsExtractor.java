@@ -28,7 +28,7 @@ public class FilmsExtractor implements ResultSetExtractor<Map<Integer, Film>> {
                 try {
                     Film newFilm = new Film();
                     newFilm.setId(filmId);
-                    newFilm.setName(rs.getString("film_name"));
+                    newFilm.setName(rs.getString("name"));
                     newFilm.setDescription(rs.getString("description"));
                     newFilm.setReleaseDate(rs.getDate("release_date").toLocalDate());
                     newFilm.setDuration(rs.getInt("duration"));
