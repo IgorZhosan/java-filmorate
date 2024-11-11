@@ -27,8 +27,12 @@ public class JdbcDirectorStorage implements DirectorStorage {
 
     @Override
     public List<Director> getAllDirectors() {
-        String sql = "SELECT * FROM directors";
-        return jdbcTemplate.query(sql, directorRowMapper);
+        String sql = "SELECT director_id, name FROM directors";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            int id = rs.getInt("director_id");
+            String name = rs.getString("name");
+            return new Director(id, name);
+        });
     }
 
     @Override

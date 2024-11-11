@@ -33,11 +33,17 @@ public class DirectorServiceImpl implements DirectorService {
 
     @Override
     public Director updateDirector(Director director) {
+        if (director.getId() == null || directorStorage.getDirectorById(director.getId()).isEmpty()) {
+            throw new NotFoundException("Режиссер с id " + director.getId() + " не найден.");
+        }
         return directorStorage.updateDirector(director);
     }
 
     @Override
     public void deleteDirector(int id) {
+        if (directorStorage.getDirectorById(id).isEmpty()) {
+            throw new NotFoundException("Режиссер с id " + id + " не найден.");
+        }
         directorStorage.deleteDirector(id);
     }
 }
