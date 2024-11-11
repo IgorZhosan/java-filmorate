@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -42,15 +41,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film filmCreate(Film film) { // для добавления нового фильма в список.
-        if (filmStorage.getAllFilms().contains(film)) {
-            log.warn("Фильм с id {} уже добавлен в список.", film.getId());
-            throw new DuplicatedDataException("Фильм уже добавлен.");
+    public Film filmCreate(Film film) { // для создания фильмов
+        if (film.getMpa() == null || mpaStorage.getMpaById(film.getMpa().getId()).isEmpty()) {
+            throw new ValidationException("Invalid MPA rating provided");
         }
-        Film filmGenre = filmValidate(film);
-        Film filmNew = filmStorage.filmCreate(filmGenre);
-        log.info("Фильм с id {} добавлен в список.", film.getId());
-        return filmNew;
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                if (genreStorage.getGenreById(genre.getId()).isEmpty()) {
+                    throw new ValidationException("Invalid Genre provided");
+                }
+            }
+        } else {
+            film.setGenres(new LinkedHashSet<>()); // Установить пустой набор, если жанры не указаны
+        }
+        return filmStorage.filmCreate(film);
     }
 
     @Override
