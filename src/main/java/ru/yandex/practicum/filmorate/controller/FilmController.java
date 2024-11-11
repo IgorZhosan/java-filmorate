@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
-import java.util.List;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -50,9 +49,19 @@ public class FilmController {
         filmService.deleteLike(id, userId);
     }
 
-    @GetMapping("/popular")  // получение списка лучших фильмов
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
-        return filmService.getPopular(count);
+    @GetMapping("/popular")
+    public Collection<Film> getMostPopularFilms(
+            @RequestParam(value = "count", required = false, defaultValue = "10") int count,
+            @RequestParam(value = "genreId", required = false) Integer genreId,
+            @RequestParam(value = "year", required = false) Integer year) {
+        if (genreId == null && year == null) {
+            return filmService.getPopular(count);
+        } else if (genreId == null) {
+            return filmService.getMostPopularFilmsByYear(count, year);
+        } else if (year == null) {
+            return filmService.getMostPopularFilmsByGenre(count, genreId);
+        }
+        return filmService.getMostPopularFilmsByGenreAndYear(count, genreId, year);
     }
 
     @DeleteMapping("/{id}")

@@ -94,10 +94,13 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getPopular(final int count) { // получение списка лучших фильмов
+    public Collection<Film> getPopular(final int count) { // получение списка лучших фильмов
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
+        }
+        if (filmStorage.getAllFilms().size() < count) {
+            return filmStorage.getPopular(filmStorage.getAllFilms().size());
         }
         return filmStorage.getPopular(count);
     }
@@ -123,6 +126,42 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.deleteFilm(id);
 
         log.info("Фильм с id {} успешно удален", id);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) { // получение списка лучших фильмов по жанру и году
+        if (filmStorage.getAllFilms().isEmpty()) {
+            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
+            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
+        }
+        if (filmStorage.getAllFilms().size() < count) {
+            return filmStorage.getMostPopularFilmsByGenreAndYear(filmStorage.getAllFilms().size(), genreId, year);
+        }
+        return filmStorage.getMostPopularFilmsByGenreAndYear(count, genreId, year);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularFilmsByYear(int count, int year) { // получение списка лучших фильмов по жанру и году
+        if (filmStorage.getAllFilms().isEmpty()) {
+            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
+            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
+        }
+        if (filmStorage.getAllFilms().size() < count) {
+            return filmStorage.getMostPopularFilmsByYear(filmStorage.getAllFilms().size(), year);
+        }
+        return filmStorage.getMostPopularFilmsByYear(count, year);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) { // получение списка лучших фильмов по жанру и году
+        if (filmStorage.getAllFilms().isEmpty()) {
+            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
+            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
+        }
+        if (filmStorage.getAllFilms().size() < count) {
+            return filmStorage.getMostPopularFilmsByGenre(filmStorage.getAllFilms().size(), genreId);
+        }
+        return filmStorage.getMostPopularFilmsByGenre(count, genreId);
     }
 
     private Film filmValidate(final Film film) {
