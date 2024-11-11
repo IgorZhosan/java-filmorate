@@ -20,6 +20,8 @@ public interface FilmStorage {
     List<Film> getPopular(int count); // получение списка лучших фильмов
 
     List<Integer> getAllId();
+
+    Collection<Film> getCommonFilms(int userId, int friendId);
 }
 
 

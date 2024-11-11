@@ -104,6 +104,11 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getPopular(count);
     }
 
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {
             film.setMpa(mpaStorage.getMpaById(film.getMpa().getId())
