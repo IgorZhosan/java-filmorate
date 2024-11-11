@@ -125,6 +125,22 @@ public class FilmServiceImpl implements FilmService {
         log.info("Фильм с id {} успешно удален", id);
     }
 
+    @Override
+    public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
+        List<Film> films = filmStorage.getFilmsByDirector(directorId);
+
+        if ("likes".equalsIgnoreCase(sortBy)) {
+            return films.stream()
+                    .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                    .collect(Collectors.toList());
+        } else if ("year".equalsIgnoreCase(sortBy)) {
+            return films.stream()
+                    .sorted(Comparator.comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        }
+        return films;
+    }
+
     private Film filmValidate(final Film film) {
         if (Objects.nonNull(film.getMpa())) {
             film.setMpa(mpaStorage.getMpaById(film.getMpa().getId())

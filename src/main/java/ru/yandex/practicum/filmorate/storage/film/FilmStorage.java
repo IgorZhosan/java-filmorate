@@ -19,7 +19,7 @@ public interface FilmStorage {
 
     List<Film> getPopular(int count); // получение списка лучших фильмов
 
-     List<Integer> getAllId();
+    List<Integer> getAllId();
 
     void deleteFilm(final int filmId); //удаление фильма по id
 
@@ -27,8 +27,7 @@ public interface FilmStorage {
 
     void deleteLikesByFilmId(int filmId);
 
-
-
+    List<Film> getFilmsByDirector(int directorId);
 }
 
 

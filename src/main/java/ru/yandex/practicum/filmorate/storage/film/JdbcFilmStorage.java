@@ -185,4 +185,24 @@ public class JdbcFilmStorage implements FilmStorage {
         String sql = "DELETE FROM likes WHERE film_id = :film_id";
         jdbc.update(sql, Map.of("film_id", filmId));
     }
+
+    @Override
+    public List<Film> getFilmsByDirector(int directorId) {
+        String sql = """
+            SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id
+            FROM films AS f
+            JOIN film_directors AS fd ON f.film_id = fd.film_id
+            WHERE fd.director_id = ?
+        """;
+
+        return jdbcTemplate.query(sql, new Object[]{directorId}, (rs, rowNum) -> {
+            Film film = new Film();
+            film.setId(rs.getInt("film_id"));
+            film.setName(rs.getString("name"));
+            film.setDescription(rs.getString("description"));
+            film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+            film.setDuration(rs.getInt("duration"));
+            return film;
+        });
+    }
 }
