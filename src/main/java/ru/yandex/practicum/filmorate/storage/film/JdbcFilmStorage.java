@@ -107,7 +107,6 @@ public class JdbcFilmStorage implements FilmStorage {
         return film;
     }
 
-
     @Override //получение фильма по id
     public Optional<Film> getFilmById(final int id) {
         String sql = "SELECT * " +
@@ -266,5 +265,4 @@ public class JdbcFilmStorage implements FilmStorage {
         String sqlInsert = "INSERT INTO film_directors (film_id, director_id) VALUES (:film_id, :director_id)";
         jdbc.batchUpdate(sqlInsert, batch);
     }
-
 }
