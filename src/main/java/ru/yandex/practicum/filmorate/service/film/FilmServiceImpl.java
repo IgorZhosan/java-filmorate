@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -42,15 +41,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film filmCreate(Film film) { // для добавления нового фильма в список.
-        if (filmStorage.getAllFilms().contains(film)) {
-            log.warn("Фильм с id {} уже добавлен в список.", film.getId());
-            throw new DuplicatedDataException("Фильм уже добавлен.");
+    public Film filmCreate(Film film) { // для создания фильмов
+        if (film.getMpa() == null || mpaStorage.getMpaById(film.getMpa().getId()).isEmpty()) {
+            throw new ValidationException("Invalid MPA rating provided");
         }
-        Film filmGenre = filmValidate(film);
-        Film filmNew = filmStorage.filmCreate(filmGenre);
-        log.info("Фильм с id {} добавлен в список.", film.getId());
-        return filmNew;
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                if (genreStorage.getGenreById(genre.getId()).isEmpty()) {
+                    throw new ValidationException("Invalid Genre provided");
+                }
+            }
+        } else {
+            film.setGenres(new LinkedHashSet<>()); // Установить пустой набор, если жанры не указаны
+        }
+        return filmStorage.filmCreate(film);
     }
 
     @Override
@@ -129,6 +133,19 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
+        List<Film> films = filmStorage.getFilmsByDirector(directorId);
+
+        if ("likes".equalsIgnoreCase(sortBy)) {
+            return films.stream()
+                    .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                    .collect(Collectors.toList());
+        } else if ("year".equalsIgnoreCase(sortBy)) {
+            return films.stream()
+                    .sorted(Comparator.comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        }
+        return films;
     public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) { // получение списка лучших фильмов по жанру и году
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");

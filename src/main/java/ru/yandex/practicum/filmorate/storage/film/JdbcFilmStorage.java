@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.extractor.FilmExtractor;
@@ -28,26 +29,39 @@ public class JdbcFilmStorage implements FilmStorage {
     private final FilmExtractor filmExtractor;
     private final FilmsExtractor filmsExtractor;
 
-    @Override   //получение списка фильмов
+    @Override
     public Collection<Film> getAllFilms() {
-        String sql = "SELECT * " +
-                "FROM films f " +
-                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON fg.genre_id = g.genre_id; ";
+        log.info("Получение списка всех фильмов.");
+        String sql = """
+             SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                    f.mpa_id, m.mpa_name,
+                    g.genre_id, g.genre_name,
+                    d.director_id, d.name AS director_name
+             FROM films f
+             LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+             LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+             LEFT JOIN genres g ON fg.genre_id = g.genre_id
+             LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+             LEFT JOIN directors d ON fd.director_id = d.director_id;
+             """;
         Map<Integer, Film> films = jdbc.query(sql, Map.of(), filmsExtractor);
-        assert films != null;
+        if (films == null || films.isEmpty()) {
+            log.warn("Фильмы не найдены или результат пуст");
+            return Collections.emptyList();
+        }
 
-        return films.values().stream().toList();
+        log.info("Количество фильмов, полученных из БД: {}", films.size());
+        return new ArrayList<>(films.values());
     }
 
     @Override // для добавления нового фильма в список.
+    @Transactional
     public Film filmCreate(final Film film) {
+        log.info("Добавление фильма: {}", film);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "INSERT INTO FILMS (name, description, release_date, duration, mpa_id) " +
-                "VALUES (:name, :description, :release_date, :duration, :mpa_id); ";
+                "VALUES (:name, :description, :release_date, :duration, :mpa_id);";
         Map<String, Object> params = new HashMap<>();
-
         params.put("name", film.getName());
         params.put("description", film.getDescription());
         params.put("release_date", film.getReleaseDate());
@@ -56,30 +70,39 @@ public class JdbcFilmStorage implements FilmStorage {
 
         jdbc.update(sql, new MapSqlParameterSource().addValues(params), keyHolder, new String[]{"film_id"});
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
-        addGenres(film.getId(), film.getGenres());
 
+        addGenres(film.getId(), film.getGenres());
+        addDirectors(film.getId(), film.getDirectors());
+
+        log.info("Фильм после добавления жанров и режиссёров: {}", film);
         return film;
     }
 
     @Override //для обновления данных существующего фильма.
-    public Film filmUpdate(final Film film) {
+    public Film filmUpdate(Film film) {
+        log.info("Обновление фильма с id {}", film.getId());
+        log.info("Данные фильма перед обновлением: {}", film);
+
         String sql = "UPDATE films SET name = :name, " +
                 "description = :description, " +
                 "release_date = :release_date, " +
                 "duration = :duration, " +
                 "mpa_id = :mpa_id " +
-                "WHERE film_id = :film_id; ";
-        Map<String, Object> params = new HashMap<>();
+                "WHERE film_id = :film_id;";
 
+        Map<String, Object> params = new HashMap<>();
         params.put("name", film.getName());
         params.put("description", film.getDescription());
         params.put("release_date", film.getReleaseDate());
         params.put("duration", film.getDuration());
-        params.put("mpa_id", film.getMpa().getId());
+        params.put("mpa_id", film.getMpa() != null ? film.getMpa().getId() : null);
         params.put("film_id", film.getId());
+
+        log.info("Параметры запроса на обновление: {}", params);
 
         jdbc.update(sql, params);
         addGenres(film.getId(), film.getGenres());
+        addDirectors(film.getId(), film.getDirectors());
 
         return film;
     }
@@ -113,27 +136,32 @@ public class JdbcFilmStorage implements FilmStorage {
     public Collection<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, " +
                 "g.genre_id, g.genre_name " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name, g.genre_id, g.genre_name " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.mpa_name, d.director_id, d.name, g.genre_id, g.genre_name " +
                 "ORDER BY like_count DESC " +
                 "LIMIT " + count;
 
-        log.info("Выполнение запроса для получения популярных фильмов с ограничением: {}", count);
+        log.info("Выполнение запроса для получения популярных фильмов с жанрами и режиссёрами, ограничение: {}", count);
 
-        Map<Integer, Film> films = jdbcTemplate.query(sql, filmsExtractor);
+        Map<Integer, Film> filmsMap = jdbcTemplate.query(sql, filmsExtractor);
 
-        if (films == null || films.isEmpty()) {
+        if (filmsMap == null || filmsMap.isEmpty()) {
             log.info("Популярные фильмы не найдены или список пуст.");
             return new ArrayList<>();
         }
 
-        log.info("Количество популярных фильмов: {}", films.size());
-        return new ArrayList<>(films.values());
+        log.info("Количество популярных фильмов: {}", filmsMap.size());
+
+        return new ArrayList<>(filmsMap.values());
     }
 
     @Override // получение списка лучших фильмов по жанру и году
@@ -218,7 +246,17 @@ public class JdbcFilmStorage implements FilmStorage {
     }
 
     private void addGenres(final int filmId, final Set<Genre> genres) {
-        Map<String, Object>[] batch = new HashMap[genres.size()];
+        // Удаляем все жанры для фильма
+        String sqlDelete = "DELETE FROM film_genres WHERE film_id = :film_id";
+        jdbc.update(sqlDelete, Map.of("film_id", filmId));
+
+        // Если коллекция жанров пуста или равна null, завершаем метод
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
+
+        // Подготовка данных для вставки новых жанров
+        Map<String, Object>[] batch = new Map[genres.size()];
         int count = 0;
 
         for (Genre genre : genres) {
@@ -228,9 +266,8 @@ public class JdbcFilmStorage implements FilmStorage {
             batch[count++] = map;
         }
 
-        String sqlDelete = "DELETE FROM film_genres WHERE film_id = :film_id AND genre_id = :genre_id; ";
-        String sqlInsert = "INSERT INTO film_genres (film_id, genre_id) VALUES (:film_id, :genre_id); ";
-        jdbc.batchUpdate(sqlDelete, batch);
+        // Вставляем новые жанры
+        String sqlInsert = "INSERT INTO film_genres (film_id, genre_id) VALUES (:film_id, :genre_id)";
         jdbc.batchUpdate(sqlInsert, batch);
     }
 
@@ -260,5 +297,57 @@ public class JdbcFilmStorage implements FilmStorage {
     public void deleteLikesByFilmId(final int filmId) {
         String sql = "DELETE FROM likes WHERE film_id = :film_id";
         jdbc.update(sql, Map.of("film_id", filmId));
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(int directorId) {
+        String sql = """
+        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+               f.mpa_id, m.mpa_name,
+               g.genre_id, g.genre_name,
+               d.director_id, d.name AS director_name
+        FROM films AS f
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+        LEFT JOIN directors AS d ON fd.director_id = d.director_id
+        LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id
+        WHERE fd.director_id = :director_id
+    """;
+
+        Map<Integer, Film> films = jdbc.query(sql, Map.of("director_id", directorId), filmsExtractor);
+
+        if (films == null || films.isEmpty()) {
+            log.warn("Фильмы с directorId={} не найдены", directorId);
+            return Collections.emptyList();
+        }
+
+        return new ArrayList<>(films.values());
+    }
+
+    private void addDirectors(final int filmId, final Set<Director> directors) {
+        // Удаляем всех режиссёров для фильма
+        String sqlDelete = "DELETE FROM film_directors WHERE film_id = :film_id";
+        jdbc.update(sqlDelete, Map.of("film_id", filmId));
+
+        // Если коллекция режиссёров пуста или равна null, завершаем метод
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+
+        // Подготовка данных для вставки новых режиссёров
+        Map<String, Object>[] batch = new Map[directors.size()];
+        int count = 0;
+
+        for (Director director : directors) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("film_id", filmId);
+            map.put("director_id", director.getId());
+            batch[count++] = map;
+        }
+
+        // Вставляем новых режиссёров
+        String sqlInsert = "INSERT INTO film_directors (film_id, director_id) VALUES (:film_id, :director_id)";
+        jdbc.batchUpdate(sqlInsert, batch);
     }
 }
