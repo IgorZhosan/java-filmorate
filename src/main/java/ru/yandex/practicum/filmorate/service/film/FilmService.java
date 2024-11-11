@@ -18,13 +18,13 @@ public interface FilmService {
 
     void deleteLike(int id, int idUser);
 
-    List<Film> getPopular(int count);
+    Collection<Film> getPopular(int count);
 
-    List<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year);
+    Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year);
 
-    List<Film> getMostPopularFilmsByYear(int count, int year);
+    Collection<Film> getMostPopularFilmsByYear(int count, int year);
 
-    List<Film> getMostPopularFilmsByGenre(int count, int genreId);
+    Collection<Film> getMostPopularFilmsByGenre(int count, int genreId);
 
     void deleteFilm(final int id);
 }

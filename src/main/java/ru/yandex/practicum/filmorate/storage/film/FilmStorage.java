@@ -17,7 +17,7 @@ public interface FilmStorage {
 
     void deleteLike(int id, int userId); // удаление лайка
 
-    List<Film> getPopular(int count); // получение списка лучших фильмов
+    Collection<Film> getPopular(int count); // получение списка лучших фильмов
 
      List<Integer> getAllId();
 
@@ -27,11 +27,11 @@ public interface FilmStorage {
 
     void deleteLikesByFilmId(int filmId);
 
-    List<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year); // получение списка лучших фильмов по жанру и году
+    Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year); // получение списка лучших фильмов по жанру и году
 
-    List<Film> getMostPopularFilmsByYear(int count, int year); // получение списка лучших фильмов по году
+    Collection<Film> getMostPopularFilmsByYear(int count, int year); // получение списка лучших фильмов по году
 
-    List<Film> getMostPopularFilmsByGenre(int count, int genreId); // получение списка лучших фильмов по году
+    Collection<Film> getMostPopularFilmsByGenre(int count, int genreId); // получение списка лучших фильмов по году
 }
 
 

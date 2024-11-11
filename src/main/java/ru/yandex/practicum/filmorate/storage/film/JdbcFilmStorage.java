@@ -110,7 +110,7 @@ public class JdbcFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
+    public Collection<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
                 "g.genre_id, g.genre_name " +
@@ -137,7 +137,7 @@ public class JdbcFilmStorage implements FilmStorage {
     }
 
     @Override // получение списка лучших фильмов по жанру и году
-    public List<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
+    public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, " +
                 "fg.genre_id, g.genre_name, " +
@@ -153,13 +153,17 @@ public class JdbcFilmStorage implements FilmStorage {
                 "LIMIT :count;";
 
         Map<Integer, Film> films = jdbc.query(sql, Map.of("genreId", genreId, "year", year, "count", count), filmsExtractor);
-        assert films != null;
 
-        return films.values().stream().toList();
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы не найдены или список пуст.");
+            return new ArrayList<>();
+        }
+
+        return films.values();
     }
 
     @Override // получение списка лучших фильмов по жанру и году
-    public List<Film> getMostPopularFilmsByYear(int count, int year) {
+    public Collection<Film> getMostPopularFilmsByYear(int count, int year) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, " +
                 "fg.genre_id, g.genre_name, " +
@@ -174,13 +178,17 @@ public class JdbcFilmStorage implements FilmStorage {
                 "ORDER BY like_count DESC " +
                 "LIMIT :count;";
         Map<Integer, Film> films = jdbc.query(sql, Map.of("year", year, "count", count), filmsExtractor);
-        assert films != null;
+
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы не найдены или список пуст.");
+            return new ArrayList<>();
+        }
 
         return films.values().stream().toList();
     }
 
     @Override // получение списка лучших фильмов по жанру и году
-    public List<Film> getMostPopularFilmsByGenre(int count, int genreId) {
+    public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, " +
                 "fg.genre_id, g.genre_name, " +
@@ -195,7 +203,11 @@ public class JdbcFilmStorage implements FilmStorage {
                 "ORDER BY like_count DESC " +
                 "LIMIT :count;";
         Map<Integer, Film> films = jdbc.query(sql, Map.of("genreId", genreId, "count", count), filmsExtractor);
-        assert films != null;
+
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы не найдены или список пуст.");
+            return new ArrayList<>();
+        }
 
         return films.values().stream().toList();
     }
