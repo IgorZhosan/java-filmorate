@@ -33,15 +33,15 @@ public class JdbcFilmStorage implements FilmStorage {
     public Collection<Film> getAllFilms() {
         log.info("Получение списка всех фильмов.");
         String sql = """
-             SELECT f.film_id, f.name, f.description, f.release_date, f.duration, 
-                    f.mpa_id, m.mpa_name, 
-                    g.genre_id, g.genre_name, 
+             SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                    f.mpa_id, m.mpa_name,
+                    g.genre_id, g.genre_name,
                     d.director_id, d.name AS director_name
-             FROM films f 
-             LEFT JOIN mpa m ON f.mpa_id = m.mpa_id 
-             LEFT JOIN film_genres fg ON f.film_id = fg.film_id 
-             LEFT JOIN genres g ON fg.genre_id = g.genre_id 
-             LEFT JOIN film_directors fd ON f.film_id = fd.film_id 
+             FROM films f
+             LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+             LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+             LEFT JOIN genres g ON fg.genre_id = g.genre_id
+             LEFT JOIN film_directors fd ON f.film_id = fd.film_id
              LEFT JOIN directors d ON fd.director_id = d.director_id;
              """;
         Map<Integer, Film> films = jdbc.query(sql, Map.of(), filmsExtractor);
@@ -217,9 +217,9 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsByDirector(int directorId) {
         String sql = """
-        SELECT f.film_id, f.name, f.description, f.release_date, f.duration, 
-               f.mpa_id, m.mpa_name, 
-               g.genre_id, g.genre_name, 
+        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+               f.mpa_id, m.mpa_name,
+               g.genre_id, g.genre_name,
                d.director_id, d.name AS director_name
         FROM films AS f
         LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
