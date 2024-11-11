@@ -135,24 +135,33 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(l.user_id) AS like_count " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, " +
+                "g.genre_id, g.genre_name " +
                 "FROM films AS f " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.mpa_name, d.director_id, d.name, g.genre_id, g.genre_name " +
                 "ORDER BY like_count DESC " +
                 "LIMIT " + count;
 
-        log.info("Executing SQL for popular films: {}", sql);
+        log.info("Выполнение запроса для получения популярных фильмов с жанрами и режиссёрами, ограничение: {}", count);
 
-        Map<Integer, Film> films = jdbcTemplate.query(sql, filmsExtractor);
-        if (films == null || films.isEmpty()) {
-            log.info("No popular films found.");
+        Map<Integer, Film> filmsMap = jdbcTemplate.query(sql, filmsExtractor);
+
+        if (filmsMap == null || filmsMap.isEmpty()) {
+            log.info("Популярные фильмы не найдены или список пуст.");
             return new ArrayList<>();
         }
 
-        log.info("Number of popular films retrieved: {}", films.size());
-        return new ArrayList<>(films.values());
+        log.info("Количество популярных фильмов: {}", filmsMap.size());
+
+        return new ArrayList<>(filmsMap.values());
     }
 
     @Override

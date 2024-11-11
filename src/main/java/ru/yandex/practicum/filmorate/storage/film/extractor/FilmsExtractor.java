@@ -24,6 +24,7 @@ public class FilmsExtractor implements ResultSetExtractor<Map<Integer, Film>> {
 
         while (rs.next()) {
             int filmId = rs.getInt("film_id");
+
             Film film = films.computeIfAbsent(filmId, id -> {
                 try {
                     Film newFilm = new Film();
@@ -37,21 +38,22 @@ public class FilmsExtractor implements ResultSetExtractor<Map<Integer, Film>> {
                     newFilm.setDirectors(new LinkedHashSet<>());
                     return newFilm;
                 } catch (SQLException e) {
-                    throw new RuntimeException("Error creating film instance", e);
+                    log.error("Ошибка создания фильма с ID: {}", filmId, e);
+                    throw new RuntimeException("Ошибка при создании экземпляра фильма", e);
                 }
             });
 
             int genreId = rs.getInt("genre_id");
-            if (genreId != 0) {
+            if (genreId != 0 && rs.getString("genre_name") != null) {
                 film.getGenres().add(new Genre(genreId, rs.getString("genre_name")));
             }
 
             int directorId = rs.getInt("director_id");
-            if (directorId != 0) {
+            if (directorId != 0 && rs.getString("director_name") != null) {
                 film.getDirectors().add(new Director(directorId, rs.getString("director_name")));
             }
         }
-
+        log.info("Количество фильмов, извлечённых из ResultSet: {}", films.size());
         return films;
     }
 }

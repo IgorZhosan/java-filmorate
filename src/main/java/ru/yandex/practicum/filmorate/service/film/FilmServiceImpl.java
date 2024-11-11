@@ -32,19 +32,13 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> getAllFilms() { // получение списка фильмов
+    public Collection<Film> getAllFilms() { //   получение списка фильмов
         log.info("Получение списка всех фильмов.");
-        Collection<Film> films = filmStorage.getAllFilms();
-
-        if (films.isEmpty()) {
-            log.warn("Список фильмов пуст.");
+        if (filmStorage.getAllFilms().isEmpty()) {
             return new ArrayList<>();
         }
-
-        log.info("Количество фильмов, полученных из filmStorage: {}", films.size());
-        return films;
+        return filmStorage.getAllFilms();
     }
-
 
     @Override
     public Film filmCreate(Film film) { // для создания фильмов
@@ -105,10 +99,6 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public List<Film> getPopular(final int count) { // получение списка лучших фильмов
-        if (filmStorage.getAllFilms().isEmpty()) {
-            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
-            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
         return filmStorage.getPopular(count);
     }
 
