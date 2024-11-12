@@ -135,8 +135,8 @@ public class JdbcUserStorage implements UserStorage {
     @Override
     public Set<Film> getRecommendations(int userId) {
         String sql = """
-        SELECT f.film_id, f.name, f.description, f.release_date, f.duration, 
-               f.mpa_id, m.mpa_name, 
+        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+               f.mpa_id, m.mpa_name,
                g.genre_id, g.genre_name,
                d.director_id, d.name AS director_name
         FROM films f
@@ -155,11 +155,11 @@ public class JdbcUserStorage implements UserStorage {
             HAVING COUNT(DISTINCT other_l.film_id) > 0
         )
         AND f.film_id NOT IN (
-            SELECT film_id 
-            FROM likes 
+            SELECT film_id
+            FROM likes
             WHERE user_id = :userId
         )
-        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, 
+        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
                  m.mpa_name, g.genre_id, g.genre_name, d.director_id, d.name;
     """;
 
