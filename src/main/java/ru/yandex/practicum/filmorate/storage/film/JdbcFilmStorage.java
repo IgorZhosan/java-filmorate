@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -33,17 +34,17 @@ public class JdbcFilmStorage implements FilmStorage {
     public Collection<Film> getAllFilms() {
         log.info("Получение списка всех фильмов.");
         String sql = """
-             SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
-                    f.mpa_id, m.mpa_name,
-                    g.genre_id, g.genre_name,
-                    d.director_id, d.name AS director_name
-             FROM films f
-             LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
-             LEFT JOIN film_genres fg ON f.film_id = fg.film_id
-             LEFT JOIN genres g ON fg.genre_id = g.genre_id
-             LEFT JOIN film_directors fd ON f.film_id = fd.film_id
-             LEFT JOIN directors d ON fd.director_id = d.director_id;
-             """;
+                SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                       f.mpa_id, m.mpa_name,
+                       g.genre_id, g.genre_name,
+                       d.director_id, d.name AS director_name
+                FROM films f
+                LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id;
+                """;
         Map<Integer, Film> films = jdbc.query(sql, Map.of(), filmsExtractor);
         if (films == null || films.isEmpty()) {
             log.warn("Фильмы не найдены или результат пуст");
@@ -302,18 +303,18 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsByDirector(int directorId) {
         String sql = """
-        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
-               f.mpa_id, m.mpa_name,
-               g.genre_id, g.genre_name,
-               d.director_id, d.name AS director_name
-        FROM films AS f
-        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
-        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
-        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
-        LEFT JOIN directors AS d ON fd.director_id = d.director_id
-        LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id
-        WHERE fd.director_id = :director_id
-    """;
+                    SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                           f.mpa_id, m.mpa_name,
+                           g.genre_id, g.genre_name,
+                           d.director_id, d.name AS director_name
+                    FROM films AS f
+                    LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+                    LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+                    LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+                    LEFT JOIN directors AS d ON fd.director_id = d.director_id
+                    LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id
+                    WHERE fd.director_id = :director_id
+                """;
 
         Map<Integer, Film> films = jdbc.query(sql, Map.of("director_id", directorId), filmsExtractor);
 
@@ -354,7 +355,7 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> getCommonFilms(int userId, int friendId) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "f.mpa_id, m.mpa_name, COUNT(fl.user_id) AS like_count, " +
                 "g.genre_id, g.genre_name, " +
                 "d.director_id, d.name AS director_name " +
                 "FROM films AS f " +
@@ -363,16 +364,14 @@ public class JdbcFilmStorage implements FilmStorage {
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "LEFT JOIN likes AS l2 ON f.film_id = l2.film_id " +
-                "WHERE l.user_id = ? " +
-                "AND l2.user_id = ? " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name, g.genre_id, g.genre_name " +
+                "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
+                "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "AND fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "GROUP BY f.film_id " +
                 "ORDER BY like_count DESC ";
 
         Map<Integer, Film> films = jdbcTemplate.query(sql, new FilmsExtractor(), userId, friendId);
-        assert films != null;
 
-        return new ArrayList<>(films.values().stream().toList());
+        return films == null || films.isEmpty() ? Collections.emptyList() : new ArrayList<>(films.values());
     }
 }
