@@ -33,17 +33,17 @@ public class JdbcFilmStorage implements FilmStorage {
     public Collection<Film> getAllFilms() {
         log.info("Получение списка всех фильмов.");
         String sql = """
-             SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
-                    f.mpa_id, m.mpa_name,
-                    g.genre_id, g.genre_name,
-                    d.director_id, d.name AS director_name
-             FROM films f
-             LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
-             LEFT JOIN film_genres fg ON f.film_id = fg.film_id
-             LEFT JOIN genres g ON fg.genre_id = g.genre_id
-             LEFT JOIN film_directors fd ON f.film_id = fd.film_id
-             LEFT JOIN directors d ON fd.director_id = d.director_id;
-             """;
+                SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                       f.mpa_id, m.mpa_name,
+                       g.genre_id, g.genre_name,
+                       d.director_id, d.name AS director_name
+                FROM films f
+                LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+                LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id;
+                """;
         Map<Integer, Film> films = jdbc.query(sql, Map.of(), filmsExtractor);
         if (films == null || films.isEmpty()) {
             log.warn("Фильмы не найдены или результат пуст");
@@ -59,8 +59,7 @@ public class JdbcFilmStorage implements FilmStorage {
     public Film filmCreate(final Film film) {
         log.info("Добавление фильма: {}", film);
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        String sql = "INSERT INTO FILMS (name, description, release_date, duration, mpa_id) " +
-                "VALUES (:name, :description, :release_date, :duration, :mpa_id);";
+        String sql = "INSERT INTO FILMS (name, description, release_date, duration, mpa_id) " + "VALUES (:name, :description, :release_date, :duration, :mpa_id);";
         Map<String, Object> params = new HashMap<>();
         params.put("name", film.getName());
         params.put("description", film.getDescription());
@@ -83,12 +82,7 @@ public class JdbcFilmStorage implements FilmStorage {
         log.info("Обновление фильма с id {}", film.getId());
         log.info("Данные фильма перед обновлением: {}", film);
 
-        String sql = "UPDATE films SET name = :name, " +
-                "description = :description, " +
-                "release_date = :release_date, " +
-                "duration = :duration, " +
-                "mpa_id = :mpa_id " +
-                "WHERE film_id = :film_id;";
+        String sql = "UPDATE films SET name = :name, " + "description = :description, " + "release_date = :release_date, " + "duration = :duration, " + "mpa_id = :mpa_id " + "WHERE film_id = :film_id;";
 
         Map<String, Object> params = new HashMap<>();
         params.put("name", film.getName());
@@ -109,12 +103,7 @@ public class JdbcFilmStorage implements FilmStorage {
 
     @Override //получение фильма по id
     public Optional<Film> getFilmById(final int id) {
-        String sql = "SELECT * " +
-                "FROM films f " +
-                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
-                "WHERE f.film_id = :film_id; ";
+        String sql = "SELECT * " + "FROM films f " + "JOIN mpa m ON f.mpa_id = m.mpa_id " + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " + "LEFT JOIN genres g ON fg.genre_id = g.genre_id " + "WHERE f.film_id = :film_id; ";
         Film film = jdbc.query(sql, Map.of("film_id", id), filmExtractor);
 
         return Optional.ofNullable(film);
@@ -132,7 +121,6 @@ public class JdbcFilmStorage implements FilmStorage {
         jdbc.update(sql, Map.of("film_id", id, "user_id", userId));
     }
 
-    @Override
     public Collection<Film> getPopular(int count) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
@@ -151,9 +139,6 @@ public class JdbcFilmStorage implements FilmStorage {
                 "ORDER BY like_count DESC " +
                 "LIMIT " + count;
 
-
-        log.info("Выполнение запроса для получения популярных фильмов с жанрами и режиссёрами, ограничение: {}", count);
-
         Map<Integer, Film> filmsMap = jdbcTemplate.query(sql, filmsExtractor);
 
         if (filmsMap == null || filmsMap.isEmpty()) {
@@ -168,21 +153,7 @@ public class JdbcFilmStorage implements FilmStorage {
 
     @Override // получение списка лучших фильмов по жанру и году
     public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
-        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
-                "d.director_id, d.name AS director_name, " +
-                "fg.genre_id, g.genre_name " +
-                "FROM films AS f " +
-                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "WHERE g.genre_id = :genreId AND YEAR(f.release_date) = :year " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY like_count DESC " +
-                "LIMIT :count;";
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " + "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " + "d.director_id, d.name AS director_name, " + "fg.genre_id, g.genre_name " + "FROM films AS f " + "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " + "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " + "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " + "LEFT JOIN likes AS l ON f.film_id = l.film_id " + "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " + "LEFT JOIN directors AS d ON fd.director_id = d.director_id " + "WHERE g.genre_id = :genreId AND YEAR(f.release_date) = :year " + "GROUP BY f.film_id, fg.genre_id " + "ORDER BY like_count DESC " + "LIMIT :count;";
 
         Map<Integer, Film> films = jdbc.query(sql, Map.of("genreId", genreId, "year", year, "count", count), filmsExtractor);
 
@@ -196,21 +167,7 @@ public class JdbcFilmStorage implements FilmStorage {
 
     @Override // получение списка лучших фильмов по году
     public Collection<Film> getMostPopularFilmsByYear(int count, int year) {
-        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
-                "d.director_id, d.name AS director_name, " +
-                "fg.genre_id, g.genre_name " +
-                "FROM films AS f " +
-                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "WHERE YEAR(f.release_date) = :year " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY like_count DESC " +
-                "LIMIT :count;";
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " + "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " + "d.director_id, d.name AS director_name, " + "fg.genre_id, g.genre_name " + "FROM films AS f " + "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " + "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " + "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " + "LEFT JOIN likes AS l ON f.film_id = l.film_id " + "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " + "LEFT JOIN directors AS d ON fd.director_id = d.director_id " + "WHERE YEAR(f.release_date) = :year " + "GROUP BY f.film_id, fg.genre_id " + "ORDER BY like_count DESC " + "LIMIT :count;";
         Map<Integer, Film> films = jdbc.query(sql, Map.of("year", year, "count", count), filmsExtractor);
 
         if (films == null || films.isEmpty()) {
@@ -223,21 +180,7 @@ public class JdbcFilmStorage implements FilmStorage {
 
     @Override // получение списка лучших фильмов по жанру
     public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) {
-        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
-                "d.director_id, d.name AS director_name, " +
-                "fg.genre_id, g.genre_name " +
-                "FROM films AS f " +
-                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "WHERE g.genre_id = :genreId " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY like_count DESC " +
-                "LIMIT :count;";
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " + "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " + "d.director_id, d.name AS director_name, " + "fg.genre_id, g.genre_name " + "FROM films AS f " + "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " + "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " + "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " + "LEFT JOIN likes AS l ON f.film_id = l.film_id " + "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " + "LEFT JOIN directors AS d ON fd.director_id = d.director_id " + "WHERE g.genre_id = :genreId " + "GROUP BY f.film_id, fg.genre_id " + "ORDER BY like_count DESC " + "LIMIT :count;";
         Map<Integer, Film> films = jdbc.query(sql, Map.of("genreId", genreId, "count", count), filmsExtractor);
 
         if (films == null || films.isEmpty()) {
@@ -286,6 +229,10 @@ public class JdbcFilmStorage implements FilmStorage {
         String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = :film_id";
         jdbc.update(deleteGenresSql, Map.of("film_id", filmId));
 
+        // Удаляем всех режиссёров, связанных с фильмом
+        String deleteDirectorsSql = "DELETE FROM film_directors WHERE film_id = :film_id";
+        jdbc.update(deleteDirectorsSql, Map.of("film_id", filmId));
+
         // Удаляем все лайки, связанные с данным фильмом
         String deleteLikesSql = "DELETE FROM likes WHERE film_id = :film_id";
         jdbc.update(deleteLikesSql, Map.of("film_id", filmId));
@@ -310,18 +257,18 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsByDirector(int directorId) {
         String sql = """
-        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
-               f.mpa_id, m.mpa_name,
-               g.genre_id, g.genre_name,
-               d.director_id, d.name AS director_name
-        FROM films AS f
-        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
-        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
-        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
-        LEFT JOIN directors AS d ON fd.director_id = d.director_id
-        LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id
-        WHERE fd.director_id = :director_id
-    """;
+                    SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                           f.mpa_id, m.mpa_name,
+                           g.genre_id, g.genre_name,
+                           d.director_id, d.name AS director_name
+                    FROM films AS f
+                    LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+                    LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+                    LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+                    LEFT JOIN directors AS d ON fd.director_id = d.director_id
+                    LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id
+                    WHERE fd.director_id = :director_id
+                """;
 
         Map<Integer, Film> films = jdbc.query(sql, Map.of("director_id", directorId), filmsExtractor);
 
@@ -357,5 +304,14 @@ public class JdbcFilmStorage implements FilmStorage {
         // Вставляем новых режиссёров
         String sqlInsert = "INSERT INTO film_directors (film_id, director_id) VALUES (:film_id, :director_id)";
         jdbc.batchUpdate(sqlInsert, batch);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " + "f.mpa_id, m.mpa_name, COUNT(fl.user_id) AS like_count, " + "g.genre_id, g.genre_name, " + "d.director_id, d.name AS director_name " + "FROM films AS f " + "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " + "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " + "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " + "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " + "LEFT JOIN directors AS d ON fd.director_id = d.director_id " + "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " + "WHERE f.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " + "AND f.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " + "GROUP BY f.film_id " + "ORDER BY like_count DESC";
+
+        Map<Integer, Film> films = jdbcTemplate.query(sql, new FilmsExtractor(), userId, friendId);
+
+        return films == null || films.isEmpty() ? Collections.emptyList() : new ArrayList<>(films.values());
     }
 }

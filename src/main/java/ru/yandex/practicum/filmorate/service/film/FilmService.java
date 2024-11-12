@@ -29,4 +29,6 @@ public interface FilmService {
     void deleteFilm(final int id);
 
     List<Film> getFilmsByDirectorSorted(int directorId, String sortBy);
+
+    Collection<Film> getCommonFilms(int userId, int friendId);
 }

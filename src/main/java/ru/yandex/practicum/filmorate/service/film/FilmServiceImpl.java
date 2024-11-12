@@ -94,7 +94,6 @@ public class FilmServiceImpl implements FilmService {
         userService.getUserById(userId);
         log.info("Пользователь с id {} удалил лайк к фильму с id {}.", userId, id);
         filmStorage.deleteLike(id, userId);
-
     }
 
     @Override
@@ -102,9 +101,6 @@ public class FilmServiceImpl implements FilmService {
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
-        if (filmStorage.getAllFilms().size() < count) {
-            return filmStorage.getPopular(filmStorage.getAllFilms().size());
         }
         return filmStorage.getPopular(count);
     }
@@ -128,6 +124,13 @@ public class FilmServiceImpl implements FilmService {
 
         log.info("Удаление фильма с id {}", id);
         filmStorage.deleteFilm(id);
+
+        // Проверка, что фильм удален
+        boolean filmStillExists = filmStorage.getFilmById(id).isPresent();
+        if (filmStillExists) {
+            log.error("Фильм с id {} не был удален!", id);
+            throw new IllegalStateException("Ошибка удаления фильма с id " + id);
+        }
 
         log.info("Фильм с id {} успешно удален", id);
     }
@@ -182,6 +185,27 @@ public class FilmServiceImpl implements FilmService {
             return filmStorage.getMostPopularFilmsByGenre(filmStorage.getAllFilms().size(), genreId);
         }
         return filmStorage.getMostPopularFilmsByGenre(count, genreId);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        log.info("Получение общих фильмов, понравившихся пользователям с id {} и {}", userId, friendId);
+
+        // Получаем общие фильмы из хранилища фильмов
+        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        if (commonFilms.isEmpty()) {
+            log.info("Нет общих фильмов для пользователей с id {} и {}", userId, friendId);
+            return Collections.emptyList();
+        }
+
+        // Сортировка фильмов по количеству лайков в порядке убывания
+        List<Film> sortedCommonFilms = commonFilms.stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .collect(Collectors.toList());
+
+        log.info("Количество общих фильмов, найденных для пользователей с id {} и {}: {}", userId, friendId, sortedCommonFilms.size());
+        return sortedCommonFilms;
     }
 
     private Film filmValidate(final Film film) {
