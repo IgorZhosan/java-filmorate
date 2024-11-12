@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
+import java.util.List;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;

@@ -146,6 +146,8 @@ public class FilmServiceImpl implements FilmService {
                     .collect(Collectors.toList());
         }
         return films;
+    }
+
     public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) { // получение списка лучших фильмов по жанру и году
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
