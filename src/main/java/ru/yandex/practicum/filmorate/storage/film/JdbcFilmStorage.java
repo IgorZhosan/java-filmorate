@@ -350,4 +350,29 @@ public class JdbcFilmStorage implements FilmStorage {
         String sqlInsert = "INSERT INTO film_directors (film_id, director_id) VALUES (:film_id, :director_id)";
         jdbc.batchUpdate(sqlInsert, batch);
     }
+
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "g.genre_id, g.genre_name, " +
+                "d.director_id, d.name AS director_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN likes AS l2 ON f.film_id = l2.film_id " +
+                "WHERE l.user_id = ? " +
+                "AND l2.user_id = ? " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.mpa_name, g.genre_id, g.genre_name " +
+                "ORDER BY like_count DESC ";
+
+        Map<Integer, Film> films = jdbcTemplate.query(sql, new FilmsExtractor(), userId, friendId);
+        assert films != null;
+
+        return new ArrayList<>(films.values().stream().toList());
+    }
 }
