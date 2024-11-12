@@ -28,5 +28,4 @@ public interface UserStorage {
     List<User> getCommonFriends(int userId, int otherId); // получение списка общих друзей с пользователем
 
     Set<Film> getRecommendations(int userId); // получения рекомендаций
-
 }
