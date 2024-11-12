@@ -167,14 +167,16 @@ public class JdbcFilmStorage implements FilmStorage {
     @Override // получение списка лучших фильмов по жанру и году
     public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, " +
-                "fg.genre_id, g.genre_name, " +
-                "COUNT(DISTINCT l.user_id) AS like_count " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, " +
+                "fg.genre_id, g.genre_name " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE g.genre_id = :genreId AND YEAR(f.release_date) = :year " +
                 "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY like_count DESC " +
@@ -190,17 +192,19 @@ public class JdbcFilmStorage implements FilmStorage {
         return films.values();
     }
 
-    @Override // получение списка лучших фильмов по жанру и году
+    @Override // получение списка лучших фильмов по году
     public Collection<Film> getMostPopularFilmsByYear(int count, int year) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, " +
-                "fg.genre_id, g.genre_name, " +
-                "COUNT(DISTINCT l.user_id) AS like_count " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, " +
+                "fg.genre_id, g.genre_name " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE YEAR(f.release_date) = :year " +
                 "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY like_count DESC " +
@@ -215,17 +219,19 @@ public class JdbcFilmStorage implements FilmStorage {
         return films.values().stream().toList();
     }
 
-    @Override // получение списка лучших фильмов по жанру и году
+    @Override // получение списка лучших фильмов по жанру
     public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "f.mpa_id, m.mpa_name, " +
-                "fg.genre_id, g.genre_name, " +
-                "COUNT(DISTINCT l.user_id) AS like_count " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, " +
+                "fg.genre_id, g.genre_name " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE g.genre_id = :genreId " +
                 "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY like_count DESC " +
