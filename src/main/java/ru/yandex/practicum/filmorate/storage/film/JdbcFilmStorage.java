@@ -145,10 +145,12 @@ public class JdbcFilmStorage implements FilmStorage {
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE f.film_id IS NOT NULL " +
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.mpa_name, d.director_id, d.name, g.genre_id, g.genre_name " +
                 "ORDER BY like_count DESC " +
                 "LIMIT " + count;
+
 
         log.info("Выполнение запроса для получения популярных фильмов с жанрами и режиссёрами, ограничение: {}", count);
 
