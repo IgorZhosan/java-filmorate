@@ -30,5 +30,5 @@ public interface FilmService {
 
     List<Film> getFilmsByDirectorSorted(int directorId, String sortBy);
 
-    Collection<Film> getCommonFilms(int user_id, int friend_id);
+    Collection<Film> getCommonFilms(int userId, int friendId);
 }
