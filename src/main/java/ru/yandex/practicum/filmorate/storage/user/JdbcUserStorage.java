@@ -6,7 +6,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.extractor.FilmsExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UserExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UsersExtractor;
 
@@ -18,6 +20,7 @@ public class JdbcUserStorage implements UserStorage {
     private final NamedParameterJdbcOperations jdbc;
     private final UserExtractor userExtractor;
     private final UsersExtractor usersExtractor;
+    private final FilmsExtractor filmsExtractor;
 
     @Override //получение списка пользователей.
     public Collection<User> getAllUsers() {
@@ -100,6 +103,21 @@ public class JdbcUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUser(final int userId) {
+        // Удаляем все записи, связанные с пользователем, из таблицы friends
+        String deleteFriendsSql = "DELETE FROM friends WHERE user_id = :user_id OR friend_id = :user_id";
+        jdbc.update(deleteFriendsSql, Map.of("user_id", userId));
+
+        // Удаляем все записи, связанные с пользователем, из таблицы likes
+        String deleteLikesSql = "DELETE FROM likes WHERE user_id = :user_id";
+        jdbc.update(deleteLikesSql, Map.of("user_id", userId));
+
+        // Удаляем самого пользователя из таблицы users
+        String deleteUserSql = "DELETE FROM users WHERE user_id = :user_id";
+        jdbc.update(deleteUserSql, Map.of("user_id", userId));
+    }
+
+    @Override
     public List<User> getCommonFriends(final int userId, final int otherId) { // получение списка общих друзей с пользователем
         String sql = "SELECT * " +
                 "FROM users " +
@@ -112,5 +130,42 @@ public class JdbcUserStorage implements UserStorage {
                 "WHERE us.user_id = :other_id));";
 
         return jdbc.query(sql, Map.of("user_id", userId, "other_id", otherId), usersExtractor);
+    }
+
+    @Override
+    public Set<Film> getRecommendations(int userId) {
+        String sql = """
+        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+               f.mpa_id, m.mpa_name,
+               g.genre_id, g.genre_name,
+               d.director_id, d.name AS director_name
+        FROM films f
+        JOIN likes l ON f.film_id = l.film_id
+        LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+        LEFT JOIN genres g ON fg.genre_id = g.genre_id
+        LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+        LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+        LEFT JOIN directors d ON fd.director_id = d.director_id
+        WHERE l.user_id IN (
+            SELECT other_l.user_id
+            FROM likes user_l
+            JOIN likes other_l ON user_l.film_id = other_l.film_id
+            WHERE user_l.user_id = :userId AND other_l.user_id != :userId
+            GROUP BY other_l.user_id
+            HAVING COUNT(DISTINCT other_l.film_id) > 0
+        )
+        AND f.film_id NOT IN (
+            SELECT film_id
+            FROM likes
+            WHERE user_id = :userId
+        )
+        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
+                 m.mpa_name, g.genre_id, g.genre_name, d.director_id, d.name;
+    """;
+
+        Map<String, Object> params = Map.of("userId", userId);
+        Map<Integer, Film> filmsMap = jdbc.query(sql, params, filmsExtractor);
+
+        return new HashSet<>(filmsMap.values());
     }
 }

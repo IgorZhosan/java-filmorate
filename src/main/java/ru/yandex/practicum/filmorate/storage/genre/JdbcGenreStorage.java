@@ -44,5 +44,4 @@ public class JdbcGenreStorage implements GenreStorage {
     private RowMapper<Genre> genreRowMapper() {
         return (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
     }
-
 }

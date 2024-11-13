@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -58,6 +60,17 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей с пользователем
     public List<User> getCommonFriends(@PathVariable("id") @Positive int userId, @PathVariable @Positive int otherId) {
         return userService.getCommonFriends(userId, otherId);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable int id) {
+        userService.deleteUser(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Set<Film> getRecommendations(@PathVariable("id") @Positive int id) {
+        return userService.getRecommendations(id);
     }
 }
 
