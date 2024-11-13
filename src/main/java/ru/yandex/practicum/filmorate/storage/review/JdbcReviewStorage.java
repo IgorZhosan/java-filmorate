@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.review.extractor.ReviewExtractor;
 import ru.yandex.practicum.filmorate.storage.review.extractor.ReviewsExtractor;
@@ -25,14 +26,18 @@ public class JdbcReviewStorage implements ReviewStorage {
 
     @Override
     public Collection<Review> getAllReviews(int filmId, int count) {
-        String sql = "SELECT * " +
-                "FROM REVIEWS r " +
-                "WHERE r.FILMID = :filmId LIMIT :count;";
+        if (filmId == 0) {
+          return getAllReviews(count);
+        } else {
+            String sql = "SELECT * " +
+                    "FROM REVIEWS r " +
+                    "WHERE r.FILMID = :filmId LIMIT :count;";
 
-        Map<Integer, Review> reviewMap = jdbc.query(sql, Map.of("filmId", filmId, "count", count), reviewsExtractor);
-        assert reviewMap != null;
+            Map<Integer, Review> reviewMap = jdbc.query(sql, Map.of("filmId", filmId, "count", count), reviewsExtractor);
+            assert reviewMap != null;
 
-        return reviewMap.values().stream().toList();
+            return reviewMap.values().stream().toList();
+        }
     }
 
     @Override
@@ -82,6 +87,16 @@ public class JdbcReviewStorage implements ReviewStorage {
         jdbc.update(sql, params);
 
         return review;
+    }
+
+    @Override
+    @Transactional
+    public void deleteReview(int reviewId) {
+        String deleteUsefulReview = "DELETE FROM USEFUL_REVIEWS WHERE REVIEWID = :reviewId";
+        jdbc.update(deleteUsefulReview, Map.of("reviewId", reviewId));
+
+        String deleteReview = "DELETE FROM REVIEWS WHERE REVIEWID = :reviewId";
+        jdbc.update(deleteReview, Map.of("reviewId", reviewId));
     }
 
     @Override

@@ -16,6 +16,8 @@ public interface ReviewStorage {
 
     Review reviewUpdate(Review film);
 
+    void deleteReview (int reviewId);
+
     Optional<Review> getReviewById(int id);
 
     void addReviewLike(int reviewId, int userId);
