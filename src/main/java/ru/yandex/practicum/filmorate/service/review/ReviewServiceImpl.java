@@ -57,29 +57,61 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public void addLike(int reviewId, int userId) {
-        // Добавляем проверку на существование отзыва перед изменением
-        getReviewById(reviewId);
-        reviewStorage.updateUseful(reviewId, 1);
+        // Проверка на существование отзыва перед добавлением лайка
+        if (getReviewById(reviewId) == null) {
+            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
+        }
+
+        // Проверка на существование пользователя перед добавлением лайка
+        if (userService.getUserById(userId) == null) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+
+        reviewStorage.addLike(reviewId, userId);
     }
 
     @Override
     public void addDislike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед изменением
-        getReviewById(reviewId);
-        reviewStorage.updateUseful(reviewId, -1);
+        // Проверка на существование отзыва перед добавлением дизлайка
+        if (getReviewById(reviewId) == null) {
+            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
+        }
+
+        // Проверка на существование пользователя перед добавлением дизлайка
+        if (userService.getUserById(userId) == null) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+
+        reviewStorage.addDislike(reviewId, userId);
     }
 
     @Override
     public void removeLike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед изменением
-        getReviewById(reviewId);
-        reviewStorage.updateUseful(reviewId, -1);
+        // Проверка на существование отзыва перед удалением лайка
+        if (getReviewById(reviewId) == null) {
+            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
+        }
+
+        // Проверка на существование пользователя перед удалением лайка
+        if (userService.getUserById(userId) == null) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+
+        reviewStorage.removeLike(reviewId, userId);
     }
 
     @Override
     public void removeDislike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед изменением
-        getReviewById(reviewId);
-        reviewStorage.updateUseful(reviewId, 1);
+        // Проверка на существование отзыва перед удалением дизлайка
+        if (getReviewById(reviewId) == null) {
+            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
+        }
+
+        // Проверка на существование пользователя перед удалением дизлайка
+        if (userService.getUserById(userId) == null) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+
+        reviewStorage.removeDislike(reviewId, userId);
     }
 }

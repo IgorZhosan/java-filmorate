@@ -66,3 +66,10 @@ CREATE TABLE IF NOT EXISTS reviews (
     film_id INTEGER REFERENCES films(film_id) ON DELETE CASCADE,
     useful INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS reviews_likes (
+    review_id INTEGER REFERENCES reviews(review_id) ON DELETE CASCADE NOT NULL,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE NOT NULL,
+    is_useful BOOLEAN NOT NULL,
+    CONSTRAINT reviews_likes_pk PRIMARY KEY (review_id, user_id)
+);

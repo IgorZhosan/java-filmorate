@@ -16,11 +16,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JdbcReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final ReviewExtractor reviewExtractor = new ReviewExtractor();
+    private final ReviewExtractor reviewExtractor;
 
     @Override
     public Review createReview(Review review) {
-        String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, new String[]{"review_id"});
@@ -28,7 +28,6 @@ public class JdbcReviewStorage implements ReviewStorage {
             ps.setObject(2, review.getPositive(), java.sql.Types.BOOLEAN);
             ps.setInt(3, review.getUserId());
             ps.setInt(4, review.getFilmId());
-            ps.setInt(5, review.getUseful());
             return ps;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().intValue());
@@ -37,11 +36,10 @@ public class JdbcReviewStorage implements ReviewStorage {
 
     @Override
     public Review updateReview(Review review) {
-        String sql = "UPDATE reviews SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
+        String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
         jdbcTemplate.update(sql,
                 review.getContent(),
                 review.getPositive(),
-                review.getUseful(),
                 review.getReviewId()
         );
         return review;
@@ -77,8 +75,26 @@ public class JdbcReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public void updateUseful(int reviewId, int delta) {
-        String sql = "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
-        jdbcTemplate.update(sql, delta, reviewId);
+    public void addLike(int reviewId, int userId) {
+        String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, TRUE)";
+        jdbcTemplate.update(sql, reviewId, userId);
+    }
+
+    @Override
+    public void addDislike(int reviewId, int userId) {
+        String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, FALSE)";
+        jdbcTemplate.update(sql, reviewId, userId);
+    }
+
+    @Override
+    public void removeLike(int reviewId, int userId) {
+        String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, reviewId, userId);
+    }
+
+    @Override
+    public void removeDislike(int reviewId, int userId) {
+        String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, reviewId, userId);
     }
 }
