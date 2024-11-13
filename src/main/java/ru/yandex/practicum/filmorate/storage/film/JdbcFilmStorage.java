@@ -175,7 +175,7 @@ public class JdbcFilmStorage implements FilmStorage {
             return new ArrayList<>();
         }
 
-        return films.values().stream().toList();
+        return films.values();
     }
 
     @Override // получение списка лучших фильмов по жанру
@@ -188,7 +188,7 @@ public class JdbcFilmStorage implements FilmStorage {
             return new ArrayList<>();
         }
 
-        return films.values().stream().toList();
+        return films.values();
     }
 
     @Override
@@ -313,5 +313,92 @@ public class JdbcFilmStorage implements FilmStorage {
         Map<Integer, Film> films = jdbcTemplate.query(sql, new FilmsExtractor(), userId, friendId);
 
         return films == null || films.isEmpty() ? Collections.emptyList() : new ArrayList<>(films.values());
+    }
+
+    @Override
+    public Collection<Film> getFilmsByTitle(String query) {
+
+        String correctQuery = "%" + query + "%";
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, fg.genre_id, g.genre_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE LOWER(f.name) LIKE LOWER(:correctQuery) " +
+                "GROUP BY f.film_id, fg.genre_id " +
+                "ORDER BY like_count DESC ";
+
+        Map<Integer, Film> films = jdbc.query(sql, Map.of("correctQuery", correctQuery), filmsExtractor);
+
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы c поиском по такому названию не найдены или список пуст.");
+            return new ArrayList<>();
+        }
+
+        return films.values();
+    }
+
+    @Override
+    public Collection<Film> getFilmsByDirectorName(String query) {
+
+        String correctQuery = "%" + query + "%";
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, fg.genre_id, g.genre_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE LOWER(d.name) LIKE LOWER(:correctQuery) " +
+                "GROUP BY f.film_id, fg.genre_id " +
+                "ORDER BY like_count DESC ";
+
+        Map<Integer, Film> films = jdbc.query(sql, Map.of("correctQuery", correctQuery), filmsExtractor);
+
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы c поиском по такому режиссеру не найдены или список пуст.");
+            return new ArrayList<>();
+        }
+
+        return films.values();
+    }
+
+    @Override
+    public Collection<Film> getFilmsByDirectorAndTitle(String query) {
+
+        String correctQuery = "%" + query + "%";
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.mpa_name, COUNT(DISTINCT l.user_id) AS like_count, " +
+                "d.director_id, d.name AS director_name, fg.genre_id, g.genre_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE LOWER(d.name) LIKE LOWER(:correctQuery) OR LOWER(f.name) LIKE LOWER(:correctQuery) " +
+                "GROUP BY f.film_id, fg.genre_id " +
+                "ORDER BY like_count DESC ";
+
+        Map<Integer, Film> films = jdbc.query(sql, Map.of("correctQuery", correctQuery), filmsExtractor);
+
+        if (films == null || films.isEmpty()) {
+            log.info("Популярные фильмы c поиском по такому режиссеру или названию не найдены или список пуст.");
+            return new ArrayList<>();
+        }
+
+        return films.values();
     }
 }

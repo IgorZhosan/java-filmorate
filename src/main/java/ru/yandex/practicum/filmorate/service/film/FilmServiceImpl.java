@@ -228,4 +228,27 @@ public class FilmServiceImpl implements FilmService {
         }
         return film;
     }
+
+    @Override
+    public Collection<Film> getSearchedFilms(String query, String by) { // получение списка лучших фильмов по жанру и году
+        if (filmStorage.getAllFilms().isEmpty()) {
+            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
+            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
+        }
+
+        Collection<Film> films = new ArrayList<>();
+
+        switch (by) {
+            case "director":
+                films = filmStorage.getFilmsByDirectorName(query);
+                break;
+            case "title":
+                films = filmStorage.getFilmsByTitle(query);
+                break;
+            default:
+                films = filmStorage.getFilmsByDirectorAndTitle(query);
+                break;
+        }
+        return films;
+    }
 }
