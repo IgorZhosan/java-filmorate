@@ -30,3 +30,5 @@ INSERT INTO films(name, description, release_date, duration, mpa_id)
 
 INSERT INTO film_genres(film_id, genre_id) VALUES (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 5), (7, 2);
 INSERT INTO friends(user_id, friend_id) VALUES (1, 2), (1, 3), (2, 1), (2, 4), (3, 1), (3, 4), (4, 1);
+INSERT INTO REVIEWS(REVIEWID, CONTENT, ISPOSITIVE, USERID, FILMID) VALUES (112, 'asdsdas', true, 4, 32);
+INSERT INTO USEFUL_REVIEWS(REVIEWID, USER_ID, ISUSEFUL) VALUES (112, 4, -1), (112, 5, 1), (112, 6, 1);
