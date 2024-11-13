@@ -20,7 +20,7 @@ public class JdbcReviewStorage implements ReviewStorage {
 
     @Override
     public Review createReview(Review review) {
-        String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, 0)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, new String[]{"review_id"});
@@ -78,23 +78,31 @@ public class JdbcReviewStorage implements ReviewStorage {
     public void addLike(int reviewId, int userId) {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, TRUE)";
         jdbcTemplate.update(sql, reviewId, userId);
+        // Увеличиваем значение полезности на 1
+        jdbcTemplate.update("UPDATE reviews SET useful = useful + 1 WHERE review_id = ?", reviewId);
     }
 
     @Override
     public void addDislike(int reviewId, int userId) {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, FALSE)";
         jdbcTemplate.update(sql, reviewId, userId);
+        // Уменьшаем значение полезности на 1
+        jdbcTemplate.update("UPDATE reviews SET useful = useful - 1 WHERE review_id = ?", reviewId);
     }
 
     @Override
     public void removeLike(int reviewId, int userId) {
         String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, reviewId, userId);
+        // Уменьшаем значение полезности на 1
+        jdbcTemplate.update("UPDATE reviews SET useful = useful - 1 WHERE review_id = ?", reviewId);
     }
 
     @Override
     public void removeDislike(int reviewId, int userId) {
         String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, reviewId, userId);
+        // Увеличиваем значение полезности на 1
+        jdbcTemplate.update("UPDATE reviews SET useful = useful + 1 WHERE review_id = ?", reviewId);
     }
 }
