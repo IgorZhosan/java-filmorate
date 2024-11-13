@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 @RestController
@@ -79,6 +81,14 @@ public class FilmController {
     @GetMapping("/common")
     public Collection<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> getSearchedFilms(
+            @RequestParam(value = "query", required = true) String query,
+            @RequestParam(value = "by", required = true) String by) {
+        Set<SearchType> searchTypes = SearchType.toEnum(by);
+        return filmService.getSearchedFilms(query, searchTypes);
     }
 }
 

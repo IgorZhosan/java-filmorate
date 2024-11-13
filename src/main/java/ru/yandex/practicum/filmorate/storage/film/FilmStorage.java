@@ -36,4 +36,10 @@ public interface FilmStorage {
     Collection<Film> getMostPopularFilmsByGenre(int count, int genreId); // получение списка лучших фильмов по году
 
     Collection<Film> getCommonFilms(int userId, int friendId);
+
+    Collection<Film> getFilmsByDirectorName(String query);
+
+    Collection<Film> getFilmsByTitle(String query);
+
+    Collection<Film> getFilmsByDirectorAndTitle(String query);
 }
