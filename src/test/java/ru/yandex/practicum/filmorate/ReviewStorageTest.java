@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ImportResource
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ReviewStorageTest {
     private final ReviewStorage reviewStorage;
