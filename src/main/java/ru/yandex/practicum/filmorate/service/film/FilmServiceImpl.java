@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -230,7 +231,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> getSearchedFilms(String query, String by) { // получение списка лучших фильмов по жанру и году
+    public Collection<Film> getSearchedFilms(String query, Set<SearchType> by) { // получение списка лучших фильмов по режиссёру и/или названию
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
@@ -238,17 +239,14 @@ public class FilmServiceImpl implements FilmService {
 
         Collection<Film> films = new ArrayList<>();
 
-        switch (by) {
-            case "director":
-                films = filmStorage.getFilmsByDirectorName(query);
-                break;
-            case "title":
-                films = filmStorage.getFilmsByTitle(query);
-                break;
-            default:
-                films = filmStorage.getFilmsByDirectorAndTitle(query);
-                break;
+        if (by.contains(SearchType.DIRECTOR) && by.contains(SearchType.TITLE)) {
+            films = filmStorage.getFilmsByDirectorAndTitle(query);
+        } else if (by.contains(SearchType.DIRECTOR)) {
+            films = filmStorage.getFilmsByDirectorName(query);
+        } else if (by.contains(SearchType.TITLE)) {
+            films = filmStorage.getFilmsByTitle(query);
         }
+
         return films;
     }
 }

@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface FilmService {
     Collection<Film> getAllFilms();
@@ -32,5 +34,5 @@ public interface FilmService {
 
     Collection<Film> getCommonFilms(int userId, int friendId);
 
-    Collection<Film> getSearchedFilms(String query, String by);
+    Collection<Film> getSearchedFilms(String query, Set<SearchType> by);
 }

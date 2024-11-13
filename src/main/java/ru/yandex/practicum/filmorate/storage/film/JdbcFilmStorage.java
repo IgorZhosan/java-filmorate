@@ -338,9 +338,8 @@ public class JdbcFilmStorage implements FilmStorage {
 
         if (films == null || films.isEmpty()) {
             log.info("Популярные фильмы c поиском по такому названию не найдены или список пуст.");
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-
         return films.values();
     }
 
@@ -367,9 +366,8 @@ public class JdbcFilmStorage implements FilmStorage {
 
         if (films == null || films.isEmpty()) {
             log.info("Популярные фильмы c поиском по такому режиссеру не найдены или список пуст.");
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-
         return films.values();
     }
 
@@ -396,9 +394,8 @@ public class JdbcFilmStorage implements FilmStorage {
 
         if (films == null || films.isEmpty()) {
             log.info("Популярные фильмы c поиском по такому режиссеру или названию не найдены или список пуст.");
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-
         return films.values();
     }
 }
