@@ -51,7 +51,7 @@ public class ReviewController {
 
     @GetMapping  // получение списка ревью
     public Collection<Review> getAllReviews(
-            @RequestParam(required=false, defaultValue = "0") @Positive int filmId,
+            @RequestParam(required = false, defaultValue = "0") @Positive int filmId,
             @RequestParam(defaultValue = "10") @Positive int count) {
         return reviewService.getAllReviews(filmId, count);
     }
