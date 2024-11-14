@@ -55,7 +55,12 @@ public class JdbcReviewStorage implements ReviewStorage {
     public Optional<Review> getReviewById(int id) {
         String sql = "SELECT * FROM reviews WHERE review_id = ?";
         List<Review> reviews = jdbcTemplate.query(sql, new Object[]{id}, reviewExtractor);
-        return reviews.stream().findFirst();
+        if (reviews.isEmpty()) {
+            return Optional.empty();
+        }
+        Review review = reviews.get(0);
+        review.setUseful(getUsefulCount(id));
+        return Optional.of(review);
     }
 
     @Override
@@ -71,38 +76,40 @@ public class JdbcReviewStorage implements ReviewStorage {
             params = new Object[]{filmId, count};
         }
 
-        return jdbcTemplate.query(sql, params, reviewExtractor);
+        List<Review> reviews = jdbcTemplate.query(sql, params, reviewExtractor);
+        for (Review review : reviews) {
+            review.setUseful(getUsefulCount(review.getReviewId()));
+        }
+        return reviews;
+    }
+
+    private int getUsefulCount(int reviewId) {
+        String sql = "SELECT (COUNT(CASE WHEN is_useful = TRUE THEN 1 END) - COUNT(CASE WHEN is_useful = FALSE THEN 1 END)) AS useful " +
+                "FROM reviews_likes WHERE review_id = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{reviewId}, Integer.class);
     }
 
     @Override
     public void addLike(int reviewId, int userId) {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, TRUE)";
         jdbcTemplate.update(sql, reviewId, userId);
-        // Увеличиваем значение полезности на 1
-        jdbcTemplate.update("UPDATE reviews SET useful = useful + 1 WHERE review_id = ?", reviewId);
     }
 
     @Override
     public void addDislike(int reviewId, int userId) {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, FALSE)";
         jdbcTemplate.update(sql, reviewId, userId);
-        // Уменьшаем значение полезности на 1
-        jdbcTemplate.update("UPDATE reviews SET useful = useful - 1 WHERE review_id = ?", reviewId);
     }
 
     @Override
     public void removeLike(int reviewId, int userId) {
         String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, reviewId, userId);
-        // Уменьшаем значение полезности на 1
-        jdbcTemplate.update("UPDATE reviews SET useful = useful - 1 WHERE review_id = ?", reviewId);
     }
 
     @Override
     public void removeDislike(int reviewId, int userId) {
         String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, reviewId, userId);
-        // Увеличиваем значение полезности на 1
-        jdbcTemplate.update("UPDATE reviews SET useful = useful + 1 WHERE review_id = ?", reviewId);
     }
 }
