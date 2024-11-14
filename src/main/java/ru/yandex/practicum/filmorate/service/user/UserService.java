@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -27,4 +28,6 @@ public interface UserService {
     void deleteUser(final int id);
 
     Set<Film> getRecommendations(int userId);
+
+    Collection<Feed> getFeedOfUser(int userId);
 }

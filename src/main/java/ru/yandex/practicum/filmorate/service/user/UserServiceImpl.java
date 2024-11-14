@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -144,5 +145,10 @@ public class UserServiceImpl implements UserService {
 
         log.info("Найдено {} рекомендаций для пользователя с id {}", recommendations.size(), userId);
         return recommendations;
+    }
+
+    @Override
+    public Collection<Feed> getFeedOfUser(int userId) {
+        return userStorage.getFeedOfUser(userId);
     }
 }
