@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -72,5 +73,9 @@ public class UserController {
     public Set<Film> getRecommendations(@PathVariable("id") @Positive int id) {
         return userService.getRecommendations(id);
     }
-}
 
+    @GetMapping("/{id}/feed")
+    public Collection<Feed> getFeedOfUser(@PathVariable("id") @Positive int id) {
+        return userService.getFeedOfUser(id);
+    }
+}

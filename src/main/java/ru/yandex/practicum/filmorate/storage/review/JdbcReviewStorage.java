@@ -6,6 +6,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.feed.JdbcFeedStorage;
 import ru.yandex.practicum.filmorate.storage.review.extractor.ReviewExtractor;
 
 import java.sql.PreparedStatement;
@@ -17,6 +20,7 @@ import java.util.Optional;
 public class JdbcReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final ReviewExtractor reviewExtractor;
+    private final JdbcFeedStorage jdbcFeedStorage;
 
     @Override
     public Review createReview(Review review) {
@@ -31,6 +35,7 @@ public class JdbcReviewStorage implements ReviewStorage {
             return ps;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().intValue());
+        jdbcFeedStorage.makeEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.ADD);
         return review;
     }
 
@@ -42,12 +47,15 @@ public class JdbcReviewStorage implements ReviewStorage {
                 review.getPositive(),
                 review.getReviewId()
         );
+        jdbcFeedStorage.makeEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.UPDATE);
         return review;
     }
 
     @Override
     public void deleteReview(int id) {
+        Review review = getReviewById(id).get();
         String sql = "DELETE FROM reviews WHERE review_id = ?";
+        jdbcFeedStorage.makeEvent(review.getUserId(), id, EventType.REVIEW, Operation.REMOVE);
         jdbcTemplate.update(sql, id);
     }
 
@@ -92,6 +100,7 @@ public class JdbcReviewStorage implements ReviewStorage {
     @Override
     public void addLike(int reviewId, int userId) {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, TRUE)";
+        jdbcFeedStorage.makeEvent(userId, reviewId, EventType.LIKE, Operation.ADD);
         jdbcTemplate.update(sql, reviewId, userId);
     }
 
@@ -99,11 +108,13 @@ public class JdbcReviewStorage implements ReviewStorage {
     public void addDislike(int reviewId, int userId) {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, is_useful) VALUES (?, ?, FALSE)";
         jdbcTemplate.update(sql, reviewId, userId);
+
     }
 
     @Override
     public void removeLike(int reviewId, int userId) {
         String sql = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
+        jdbcFeedStorage.makeEvent(userId, reviewId, EventType.LIKE, Operation.REMOVE);
         jdbcTemplate.update(sql, reviewId, userId);
     }
 

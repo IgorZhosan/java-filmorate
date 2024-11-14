@@ -6,8 +6,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.feed.JdbcFeedStorage;
+import ru.yandex.practicum.filmorate.storage.feed.extractor.FeedExtractor;
 import ru.yandex.practicum.filmorate.storage.film.extractor.FilmsExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UserExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UsersExtractor;
@@ -21,6 +26,8 @@ public class JdbcUserStorage implements UserStorage {
     private final UserExtractor userExtractor;
     private final UsersExtractor usersExtractor;
     private final FilmsExtractor filmsExtractor;
+    private final FeedExtractor feedExtractor;
+    private final JdbcFeedStorage jdbcFeedStorage;
 
     @Override //получение списка пользователей.
     public Collection<User> getAllUsers() {
@@ -82,6 +89,7 @@ public class JdbcUserStorage implements UserStorage {
         String sql = "MERGE INTO friends (user_id, friend_id) " +
                 "VALUES (:user_id, :friend_id); ";
         jdbc.update(sql, Map.of("user_id", userId, "friend_id", friendId));
+        jdbcFeedStorage.makeEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     @Override
@@ -89,6 +97,7 @@ public class JdbcUserStorage implements UserStorage {
         String sql = "DELETE FROM friends " +
                 "WHERE user_id = :user_id AND friend_id = :friend_id; ";
         jdbc.update(sql, Map.of("user_id", userId, "friend_id", friendId));
+        jdbcFeedStorage.makeEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     @Override
@@ -135,37 +144,43 @@ public class JdbcUserStorage implements UserStorage {
     @Override
     public Set<Film> getRecommendations(int userId) {
         String sql = """
-        SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
-               f.mpa_id, m.mpa_name,
-               g.genre_id, g.genre_name,
-               d.director_id, d.name AS director_name
-        FROM films f
-        JOIN likes l ON f.film_id = l.film_id
-        LEFT JOIN film_genres fg ON f.film_id = fg.film_id
-        LEFT JOIN genres g ON fg.genre_id = g.genre_id
-        LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
-        LEFT JOIN film_directors fd ON f.film_id = fd.film_id
-        LEFT JOIN directors d ON fd.director_id = d.director_id
-        WHERE l.user_id IN (
-            SELECT other_l.user_id
-            FROM likes user_l
-            JOIN likes other_l ON user_l.film_id = other_l.film_id
-            WHERE user_l.user_id = :userId AND other_l.user_id != :userId
-            GROUP BY other_l.user_id
-            HAVING COUNT(DISTINCT other_l.film_id) > 0
-        )
-        AND f.film_id NOT IN (
-            SELECT film_id
-            FROM likes
-            WHERE user_id = :userId
-        )
-        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
-                 m.mpa_name, g.genre_id, g.genre_name, d.director_id, d.name;
-    """;
+                    SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                           f.mpa_id, m.mpa_name,
+                           g.genre_id, g.genre_name,
+                           d.director_id, d.name AS director_name
+                    FROM films f
+                    JOIN likes l ON f.film_id = l.film_id
+                    LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+                    LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                    LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+                    LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+                    LEFT JOIN directors d ON fd.director_id = d.director_id
+                    WHERE l.user_id IN (
+                        SELECT other_l.user_id
+                        FROM likes user_l
+                        JOIN likes other_l ON user_l.film_id = other_l.film_id
+                        WHERE user_l.user_id = :userId AND other_l.user_id != :userId
+                        GROUP BY other_l.user_id
+                        HAVING COUNT(DISTINCT other_l.film_id) > 0
+                    )
+                    AND f.film_id NOT IN (
+                        SELECT film_id
+                        FROM likes
+                        WHERE user_id = :userId
+                    )
+                    GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
+                             m.mpa_name, g.genre_id, g.genre_name, d.director_id, d.name;
+                """;
 
         Map<String, Object> params = Map.of("userId", userId);
         Map<Integer, Film> filmsMap = jdbc.query(sql, params, filmsExtractor);
 
         return new HashSet<>(filmsMap.values());
+    }
+
+    @Override
+    public Collection<Feed> getFeedOfUser(int userId) {
+        String sql = "SELECT * FROM feed WHERE user_id = :user_id;";
+        return jdbc.query(sql, Map.of("user_id", userId), feedExtractor);
     }
 }
