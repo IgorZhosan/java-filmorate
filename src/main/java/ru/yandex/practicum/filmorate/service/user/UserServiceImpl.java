@@ -95,8 +95,9 @@ public class UserServiceImpl implements UserService {
         return listFriends;
     }
 
+    // получение списка общих друзей с пользователем
     @Override
-    public List<User> getCommonFriends(final int userId, final int otherId) { // получение списка общих друзей с пользователем
+    public List<User> getCommonFriends(final int userId, final int otherId) {
         getUserById(userId);
         getUserById(otherId);
         if (userId == otherId) {

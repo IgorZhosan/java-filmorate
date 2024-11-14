@@ -25,7 +25,8 @@ public class FilmServiceImpl implements FilmService {
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
 
-    public FilmServiceImpl(@Qualifier("jdbcFilmStorage") FilmStorage filmStorage, UserService userService, GenreStorage genreStorage, MpaStorage mpaStorage) {
+    public FilmServiceImpl(@Qualifier("jdbcFilmStorage") FilmStorage filmStorage, UserService userService
+            , GenreStorage genreStorage, MpaStorage mpaStorage) {
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.genreStorage = genreStorage;
@@ -53,7 +54,7 @@ public class FilmServiceImpl implements FilmService {
                 }
             }
         } else {
-            film.setGenres(new LinkedHashSet<>()); // Установить пустой набор, если жанры не указаны
+            film.setGenres(new LinkedHashSet<>());
         }
         return filmStorage.filmCreate(film);
     }
@@ -152,8 +153,9 @@ public class FilmServiceImpl implements FilmService {
         return films;
     }
 
+    // получение списка лучших фильмов по жанру и году
     @Override
-    public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) { // получение списка лучших фильмов по жанру и году
+    public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
@@ -164,8 +166,9 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getMostPopularFilmsByGenreAndYear(count, genreId, year);
     }
 
+    // получение списка лучших фильмов по жанру и году
     @Override
-    public Collection<Film> getMostPopularFilmsByYear(int count, int year) { // получение списка лучших фильмов по жанру и году
+    public Collection<Film> getMostPopularFilmsByYear(int count, int year) {
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
@@ -176,8 +179,9 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getMostPopularFilmsByYear(count, year);
     }
 
+    // получение списка лучших фильмов по жанру и году
     @Override
-    public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) { // получение списка лучших фильмов по жанру и году
+    public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) {
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
@@ -205,7 +209,8 @@ public class FilmServiceImpl implements FilmService {
                 .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .collect(Collectors.toList());
 
-        log.info("Количество общих фильмов, найденных для пользователей с id {} и {}: {}", userId, friendId, sortedCommonFilms.size());
+        log.info("Количество общих фильмов, найденных для пользователей с id {} и {}: {}",
+                userId, friendId, sortedCommonFilms.size());
         return sortedCommonFilms;
     }
 
@@ -230,8 +235,9 @@ public class FilmServiceImpl implements FilmService {
         return film;
     }
 
+    // получение списка лучших фильмов по режиссёру и/или названию
     @Override
-    public Collection<Film> getSearchedFilms(String query, Set<SearchType> by) { // получение списка лучших фильмов по режиссёру и/или названию
+    public Collection<Film> getSearchedFilms(String query, Set<SearchType> by) {
         if (filmStorage.getAllFilms().isEmpty()) {
             log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
             throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");

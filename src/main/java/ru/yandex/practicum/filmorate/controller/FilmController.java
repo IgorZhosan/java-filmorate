@@ -91,4 +91,3 @@ public class FilmController {
         return filmService.getSearchedFilms(query, searchTypes);
     }
 }
-

@@ -126,8 +126,9 @@ public class JdbcUserStorage implements UserStorage {
         jdbc.update(deleteUserSql, Map.of("user_id", userId));
     }
 
+    // получение списка общих друзей с пользователем
     @Override
-    public List<User> getCommonFriends(final int userId, final int otherId) { // получение списка общих друзей с пользователем
+    public List<User> getCommonFriends(final int userId, final int otherId) {
         String sql = "SELECT * " +
                 "FROM users " +
                 "WHERE user_id IN (SELECT f.friend_id " +
