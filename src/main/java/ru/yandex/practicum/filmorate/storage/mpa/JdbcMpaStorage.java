@@ -30,6 +30,7 @@ public class JdbcMpaStorage implements MpaStorage {
     @Override
     public List<Mpa> getAllMpa() {
         String sql = "SELECT * FROM mpa;";
-        return jdbc.query(sql, (rs, rowNum) -> new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
+        return jdbc.query(sql, (rs, rowNum)
+                -> new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
     }
 }

@@ -92,8 +92,8 @@ public class JdbcReviewStorage implements ReviewStorage {
     }
 
     private int getUsefulCount(int reviewId) {
-        String sql = "SELECT (COUNT(CASE WHEN is_useful = TRUE THEN 1 END) - COUNT(CASE WHEN is_useful = FALSE THEN 1 END)) AS useful " +
-                "FROM reviews_likes WHERE review_id = ?";
+        String sql = "SELECT (COUNT(CASE WHEN is_useful = TRUE THEN 1 END) - COUNT(CASE WHEN is_useful" +
+                " = FALSE THEN 1 END)) AS useful " + " FROM reviews_likes WHERE review_id = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{reviewId}, Integer.class);
     }
 
