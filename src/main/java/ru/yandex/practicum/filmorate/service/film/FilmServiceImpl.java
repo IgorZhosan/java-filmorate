@@ -25,8 +25,8 @@ public class FilmServiceImpl implements FilmService {
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
 
-    public FilmServiceImpl(@Qualifier("jdbcFilmStorage") FilmStorage filmStorage, UserService userService
-            , GenreStorage genreStorage, MpaStorage mpaStorage) {
+    public FilmServiceImpl(@Qualifier("jdbcFilmStorage") FilmStorage filmStorage, UserService userService,
+                           GenreStorage genreStorage, MpaStorage mpaStorage) {
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.genreStorage = genreStorage;
