@@ -15,9 +15,10 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class JdbcFeedStorage {
+public class JdbcFeedStorage implements FeedStorage {
     private final NamedParameterJdbcOperations jdbc;
 
+    @Override
     public void makeEvent(final int userId, final int friendId, final EventType eventType, final Operation operation) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sqlEvent = "INSERT INTO feed (user_id, timestamp, event_type, operation, entity_id) " +

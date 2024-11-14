@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -38,17 +37,17 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable @Positive @RequestBody int id) {
+    public Film getFilmById(@PathVariable int id) {
         return filmService.getFilmById(id);
     }
 
     @PutMapping("/{id}/like/{userId}") //добавление лайка
-    public void addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+    public void addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}") //удаление лайка
-    public void deleteLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+    public void deleteLike(@PathVariable int id, @PathVariable int userId) {
         filmService.deleteLike(id, userId);
     }
 

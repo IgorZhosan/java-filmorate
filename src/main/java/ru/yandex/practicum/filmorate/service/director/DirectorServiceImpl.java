@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service.director;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -28,6 +29,9 @@ public class DirectorServiceImpl implements DirectorService {
 
     @Override
     public Director createDirector(Director director) {
+        if (director.getName().isBlank() || director.getName().isEmpty()) {
+            throw new ValidationException("Имя режиссера не может быть пустым.");
+        }
         return directorStorage.createDirector(director);
     }
 
