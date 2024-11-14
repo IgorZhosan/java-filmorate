@@ -16,7 +16,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.storage.feed.JdbcFeedStorage;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.extractor.FilmExtractor;
 import ru.yandex.practicum.filmorate.storage.film.extractor.FilmsExtractor;
 
@@ -31,7 +31,7 @@ public class JdbcFilmStorage implements FilmStorage {
     private final NamedParameterJdbcOperations jdbc;
     private final FilmExtractor filmExtractor;
     private final FilmsExtractor filmsExtractor;
-    private final JdbcFeedStorage jdbcFeedStorage;
+    private final FeedStorage feedStorage;
 
     @Override
     public Collection<Film> getAllFilms() {
@@ -128,14 +128,14 @@ public class JdbcFilmStorage implements FilmStorage {
     public void addLike(final int id, final int userId) {
         String sql = "MERGE INTO likes(film_id, user_id) VALUES (:film_id, :user_id); ";
         jdbc.update(sql, Map.of("film_id", id, "user_id", userId));
-        jdbcFeedStorage.makeEvent(userId, id, EventType.LIKE, Operation.ADD);
+        feedStorage.makeEvent(userId, id, EventType.LIKE, Operation.ADD);
     }
 
     @Override // удаление лайка
     public void deleteLike(final int id, final int userId) {
         String sql = "DELETE FROM likes WHERE film_id = :film_id AND user_id = :user_id; ";
         jdbc.update(sql, Map.of("film_id", id, "user_id", userId));
-        jdbcFeedStorage.makeEvent(userId, id, EventType.LIKE, Operation.REMOVE);
+        feedStorage.makeEvent(userId, id, EventType.LIKE, Operation.REMOVE);
     }
 
     public Collection<Film> getPopular(int count) {

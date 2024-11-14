@@ -6,12 +6,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.storage.feed.JdbcFeedStorage;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.feed.extractor.FeedExtractor;
 import ru.yandex.practicum.filmorate.storage.film.extractor.FilmsExtractor;
 import ru.yandex.practicum.filmorate.storage.user.extractor.UserExtractor;
@@ -27,7 +28,7 @@ public class JdbcUserStorage implements UserStorage {
     private final UsersExtractor usersExtractor;
     private final FilmsExtractor filmsExtractor;
     private final FeedExtractor feedExtractor;
-    private final JdbcFeedStorage jdbcFeedStorage;
+    private final FeedStorage feedStorage;
 
     @Override //получение списка пользователей.
     public Collection<User> getAllUsers() {
@@ -89,7 +90,7 @@ public class JdbcUserStorage implements UserStorage {
         String sql = "MERGE INTO friends (user_id, friend_id) " +
                 "VALUES (:user_id, :friend_id); ";
         jdbc.update(sql, Map.of("user_id", userId, "friend_id", friendId));
-        jdbcFeedStorage.makeEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
+        feedStorage.makeEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class JdbcUserStorage implements UserStorage {
         String sql = "DELETE FROM friends " +
                 "WHERE user_id = :user_id AND friend_id = :friend_id; ";
         jdbc.update(sql, Map.of("user_id", userId, "friend_id", friendId));
-        jdbcFeedStorage.makeEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
+        feedStorage.makeEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     @Override
@@ -181,7 +182,11 @@ public class JdbcUserStorage implements UserStorage {
 
     @Override
     public Collection<Feed> getFeedOfUser(int userId) {
-        String sql = "SELECT * FROM feed WHERE user_id = :user_id;";
-        return jdbc.query(sql, Map.of("user_id", userId), feedExtractor);
+        if (getUserById(userId).isPresent()) {
+            String sql = "SELECT * FROM feed WHERE user_id = :user_id;";
+            return jdbc.query(sql, Map.of("user_id", userId), feedExtractor);
+        } else {
+            throw new NotFoundException("Пользователь не найден.");
+        }
     }
 }

@@ -39,27 +39,27 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable @Positive int id) {
+    public User getUserById(@PathVariable int id) {
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}") //добавление пользователя в друзья
-    public void addNewFriend(@PathVariable("id") @Positive int userId, @PathVariable @Positive int friendId) {
+    public void addNewFriend(@PathVariable("id") int userId, @PathVariable int friendId) {
         userService.addNewFriend(userId, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}") // удаление из друзей пользователя
-    public void deleteFriend(@PathVariable("id") @Positive int userId, @PathVariable @Positive int friendId) {
+    public void deleteFriend(@PathVariable("id") int userId, @PathVariable int friendId) {
         userService.deleteFriend(userId, friendId);
     }
 
     @GetMapping("/{id}/friends") // получение списка друзей пользователя
-    public List<User> getAllFriends(@PathVariable("id") @Positive int userId) {
+    public List<User> getAllFriends(@PathVariable("id") int userId) {
         return userService.getAllFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей с пользователем
-    public List<User> getCommonFriends(@PathVariable("id") @Positive int userId, @PathVariable @Positive int otherId) {
+    public List<User> getCommonFriends(@PathVariable("id") int userId, @PathVariable int otherId) {
         return userService.getCommonFriends(userId, otherId);
     }
 
