@@ -1,258 +1,144 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.enums.SearchType;
-import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.service.director.DirectorService;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.util.EventType;
+import ru.yandex.practicum.filmorate.util.Operation;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
+@Validated
 public class FilmServiceImpl implements FilmService {
-    private final FilmStorage filmStorage;
-    private final UserService userService;
-    private final GenreStorage genreStorage;
-    private final MpaStorage mpaStorage;
 
-    public FilmServiceImpl(@Qualifier("jdbcFilmStorage") FilmStorage filmStorage, UserService userService,
-                           GenreStorage genreStorage, MpaStorage mpaStorage) {
-        this.filmStorage = filmStorage;
-        this.userService = userService;
-        this.genreStorage = genreStorage;
-        this.mpaStorage = mpaStorage;
+    private final FilmStorage filmDbRepository;
+    private final MpaStorage mpaDbRepository;
+    private final GenreStorage genreDbRepository;
+    private final UserStorage userDbRepository;
+    private final DirectorService directorService;
+    private final EventService eventService;
+
+    @Override
+    public List<Film> getFilms() {
+        return filmDbRepository.getAll();
     }
 
     @Override
-    public Collection<Film> getAllFilms() { //   получение списка фильмов
-        log.info("Получение списка всех фильмов.");
-        if (filmStorage.getAllFilms().isEmpty()) {
-            return new ArrayList<>();
-        }
-        return filmStorage.getAllFilms();
+    public Film getFilmById(Integer id) {
+        return filmDbRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Фильма с заданным идентификатором не существует"));
     }
 
     @Override
-    public Film filmCreate(Film film) { // для создания фильмов
-        if (film.getMpa() == null || mpaStorage.getMpaById(film.getMpa().getId()).isEmpty()) {
-            throw new ValidationException("Invalid MPA rating provided");
-        }
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                if (genreStorage.getGenreById(genre.getId()).isEmpty()) {
-                    throw new ValidationException("Invalid Genre provided");
-                }
-            }
+    public Film addFilm(Film film) {
+        mpaDbRepository.getById(film.getMpa().getId())
+                .orElseThrow(() -> new ValidationException("Ошибка! Рейтинга с заданным идентификатором не существует"));
+        checkGenres(film);
+        return filmDbRepository.addFilm(film);
+    }
+
+    @Override
+    public Boolean deleteFilm(Integer id) {
+        filmDbRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Фильма с заданным идентификатором не существует"));
+        return filmDbRepository.deleteFilm(id);
+    }
+
+    @Override
+    public Film updateFilm(Film film) {
+        log.debug("Изменение параметров фильма с идентификатором {}", film.getId());
+        filmDbRepository.getById(film.getId())
+                .orElseThrow(() -> new NotFoundException("Ошибка! Фильма с заданным идентификатором не существует"));
+        mpaDbRepository.getById(film.getMpa().getId())
+                .orElseThrow(() -> new NotFoundException("Ошибка! Рейтинга с заданным идентификатором не существует"));
+        checkGenres(film);
+        return filmDbRepository.updateFilm(film);
+    }
+
+    @Override
+    public void addUserLike(Integer filmId, Integer userId) {
+        filmDbRepository.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Фильма с заданным идентификатором не существует"));
+        userDbRepository.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Пользователя с заданным идентификатором не существует"));
+        filmDbRepository.addUserLike(filmId, userId);
+        eventService.register(userId, Operation.ADD, EventType.LIKE, filmId);
+    }
+
+    @Override
+    public void deleteUserLike(Integer filmId, Integer userId) {
+        filmDbRepository.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Фильма с заданным идентификатором не существует"));
+        userDbRepository.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Пользователя с заданным идентификатором не существует"));
+        eventService.register(userId, Operation.REMOVE, EventType.LIKE, filmId);
+        filmDbRepository.deleteUserLike(filmId, userId);
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        if (year == null && genreId == null) {
+            return filmDbRepository.getPopularFilms(count);
+        } else if (year != null && genreId == null) {
+            return filmDbRepository.getPopularFilmsWithYear(count, year);
+        } else if (year == null && genreId != null) {
+            return filmDbRepository.getPopularFilmsWithGenre(count, genreId);
         } else {
-            film.setGenres(new LinkedHashSet<>());
+            return filmDbRepository.getPopularFilmsWithGenreAndYear(count, year, genreId);
         }
-        return filmStorage.filmCreate(film);
     }
 
     @Override
-    public Film filmUpdate(Film film) { //для обновления данных существующего фильма.
-        if (filmStorage.getFilmById(film.getId()).isEmpty()) {
-            log.warn("Фильм с id {} не найден.", film.getId());
-            throw new NotFoundException("Фильм с id: " + film.getId() + " не найден.");
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        if (!"year".equals(sortBy) && !"likes".equals(sortBy)) {
+            log.error("Переданы некорректные параметры запроса.");
+            throw new NotFoundException("Ошибка! Параметры запроса некорректны.");
         }
-        Film filmGenre = filmValidate(film);
-        Film filmNew = filmStorage.filmUpdate(filmGenre);
-        log.info("Фильм с id {} обновлен.", film.getId());
-        return filmNew;
+        directorService.getDirectorById(directorId);
+        return filmDbRepository.getFilmsByDirector(directorId, sortBy);
     }
 
     @Override
-    public Film getFilmById(final int id) {
-        log.info("Получение фильма по id.");
-        return filmStorage.getFilmById(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id: " + id + " не существует."));
+    public Set<Film> getCommonFilms(Integer userId, Integer friendId) {
+        Set<Film> userFilms = filmDbRepository.getLikeFilmsByUserId(userId);
+        userFilms.retainAll(filmDbRepository.getLikeFilmsByUserId(friendId));
+        return userFilms;
     }
 
     @Override
-    public void addLike(final int id, final int userId) { //добавление лайка
-        getFilmById(id);
-        userService.getUserById(userId);
-        if (filmStorage.getFilmById(id).get().getLikes().contains(userId)) {
-            log.warn("Ошибка при добавлении лайка. Пользователь уже поставил лайк.");
-            throw new ValidationException("Ошибка при добавлении лайка. Пользователь уже поставил лайк.");
+    public List<Film> searchFilm(String query, String by) {
+        Set<String> validByValues = new HashSet<>(Arrays.asList("director", "title", "director,title", "title,director"));
+        if (query == null || by == null || !validByValues.contains(by)) {
+            log.error("Переданы некорректные параметры запроса.");
+            throw new IllegalArgumentException("Ошибка! Параметры запроса некорректны.");
         }
-        log.info("Пользователь с id {} добавил лайк к фильму с id {}.", userId, id);
-        filmStorage.addLike(id, userId);
+        return filmDbRepository.searchFilm(query, by);
     }
 
-    @Override
-    public void deleteLike(final int id, final int userId) { // удаление лайка
-        getFilmById(id);
-        userService.getUserById(userId);
-        log.info("Пользователь с id {} удалил лайк к фильму с id {}.", userId, id);
-        filmStorage.deleteLike(id, userId);
-    }
-
-    @Override
-    public Collection<Film> getPopular(final int count) { // получение списка лучших фильмов
-        if (filmStorage.getAllFilms().isEmpty()) {
-            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
-            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
-        return filmStorage.getPopular(count);
-    }
-
-    @Override
-    @Transactional
-    public void deleteFilm(final int id) {
-        log.info("Начало удаления фильма с id {}", id);
-
-        Film film = filmStorage.getFilmById(id).orElseThrow(() ->
-                new NotFoundException("Фильм с id " + id + " не найден.")
-        );
-
-        log.info("Фильм найден: {}", film);
-
-        log.info("Удаление всех связанных жанров для фильма с id {}", id);
-        filmStorage.deleteGenresByFilmId(id);
-
-        log.info("Удаление всех связанных лайков для фильма с id {}", id);
-        filmStorage.deleteLikesByFilmId(id);
-
-        log.info("Удаление фильма с id {}", id);
-        filmStorage.deleteFilm(id);
-
-        // Проверка, что фильм удален
-        boolean filmStillExists = filmStorage.getFilmById(id).isPresent();
-        if (filmStillExists) {
-            log.error("Фильм с id {} не был удален!", id);
-            throw new IllegalStateException("Ошибка удаления фильма с id " + id);
-        }
-
-        log.info("Фильм с id {} успешно удален", id);
-    }
-
-    @Override
-    public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
-        List<Film> films = filmStorage.getFilmsByDirector(directorId);
-
-        if ("likes".equalsIgnoreCase(sortBy)) {
-            return films.stream()
-                    .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
-                    .collect(Collectors.toList());
-        } else if ("year".equalsIgnoreCase(sortBy)) {
-            return films.stream()
-                    .sorted(Comparator.comparing(Film::getReleaseDate))
-                    .collect(Collectors.toList());
-        }
-        return films;
-    }
-
-    // получение списка лучших фильмов по жанру и году
-    @Override
-    public Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
-        if (filmStorage.getAllFilms().isEmpty()) {
-            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
-            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
-        if (filmStorage.getAllFilms().size() < count) {
-            return filmStorage.getMostPopularFilmsByGenreAndYear(filmStorage.getAllFilms().size(), genreId, year);
-        }
-        return filmStorage.getMostPopularFilmsByGenreAndYear(count, genreId, year);
-    }
-
-    // получение списка лучших фильмов по жанру и году
-    @Override
-    public Collection<Film> getMostPopularFilmsByYear(int count, int year) {
-        if (filmStorage.getAllFilms().isEmpty()) {
-            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
-            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
-        if (filmStorage.getAllFilms().size() < count) {
-            return filmStorage.getMostPopularFilmsByYear(filmStorage.getAllFilms().size(), year);
-        }
-        return filmStorage.getMostPopularFilmsByYear(count, year);
-    }
-
-    // получение списка лучших фильмов по жанру и году
-    @Override
-    public Collection<Film> getMostPopularFilmsByGenre(int count, int genreId) {
-        if (filmStorage.getAllFilms().isEmpty()) {
-            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
-            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
-        if (filmStorage.getAllFilms().size() < count) {
-            return filmStorage.getMostPopularFilmsByGenre(filmStorage.getAllFilms().size(), genreId);
-        }
-        return filmStorage.getMostPopularFilmsByGenre(count, genreId);
-    }
-
-    @Override
-    public Collection<Film> getCommonFilms(int userId, int friendId) {
-        log.info("Получение общих фильмов, понравившихся пользователям с id {} и {}", userId, friendId);
-
-        // Получаем общие фильмы из хранилища фильмов
-        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
-
-        if (commonFilms.isEmpty()) {
-            log.info("Нет общих фильмов для пользователей с id {} и {}", userId, friendId);
-            return Collections.emptyList();
-        }
-
-        // Сортировка фильмов по количеству лайков в порядке убывания
-        List<Film> sortedCommonFilms = commonFilms.stream()
-                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
-                .collect(Collectors.toList());
-
-        log.info("Количество общих фильмов, найденных для пользователей с id {} и {}: {}",
-                userId, friendId, sortedCommonFilms.size());
-        return sortedCommonFilms;
-    }
-
-    private Film filmValidate(final Film film) {
-        if (Objects.nonNull(film.getMpa())) {
-            film.setMpa(mpaStorage.getMpaById(film.getMpa().getId())
-                    .orElseThrow(() -> new ValidationException("Рейтинг введён некорректно."))
-            );
-        }
-        if (Objects.nonNull(film.getGenres())) {
-            List<Integer> idGenres = film.getGenres().stream().map(Genre::getId).toList();
-            LinkedHashSet<Genre> genres = genreStorage.getGenresList(idGenres).stream()
-                    .sorted(Comparator.comparing(Genre::getId)).collect(Collectors.toCollection(LinkedHashSet::new));
-            if (film.getGenres().size() == genres.size()) {
-                film.getGenres().clear();
-                film.setGenres(genres);
-            } else {
-                log.warn("Жанр введен некорректно.");
-                throw new ValidationException("Жанр введен некорректно.");
+    private void checkGenres(Film film) {
+        if (film.getGenres() != null) {
+            Set<Integer> genreIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toSet());
+            Set<Genre> genres = genreDbRepository.getByIds(genreIds);
+            if (genreIds.size() != genres.size()) {
+                throw new ValidationException("Ошибка! Жанра с заданным идентификатором не существует");
             }
         }
-        return film;
-    }
-
-    // получение списка лучших фильмов по режиссёру и/или названию
-    @Override
-    public Collection<Film> getSearchedFilms(String query, Set<SearchType> by) {
-        if (filmStorage.getAllFilms().isEmpty()) {
-            log.warn("Ошибка при получении списка фильмов. Список фильмов пуст.");
-            throw new NotFoundException("Ошибка при получении списка фильмов. Список фильмов пуст.");
-        }
-
-        Collection<Film> films = new ArrayList<>();
-
-        if (by.contains(SearchType.DIRECTOR) && by.contains(SearchType.TITLE)) {
-            films = filmStorage.getFilmsByDirectorAndTitle(query);
-        } else if (by.contains(SearchType.DIRECTOR)) {
-            films = filmStorage.getFilmsByDirectorName(query);
-        } else if (by.contains(SearchType.TITLE)) {
-            films = filmStorage.getFilmsByTitle(query);
-        }
-
-        return films;
     }
 }

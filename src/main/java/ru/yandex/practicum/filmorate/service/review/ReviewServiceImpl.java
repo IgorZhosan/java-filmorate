@@ -1,117 +1,120 @@
 package ru.yandex.practicum.filmorate.service.review;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
-import ru.yandex.practicum.filmorate.service.user.UserService;
-import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.event.EventService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.util.EventType;
+import ru.yandex.practicum.filmorate.util.Operation;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Validated
 public class ReviewServiceImpl implements ReviewService {
-    private final ReviewStorage reviewStorage;
-    private final UserService userService;
-    private final FilmService filmService;
+
+    private final ReviewStorage reviewDbRepository;
+    private final FilmStorage filmDbRepository;
+    private final UserStorage userDbRepository;
+    private final EventService eventService;
 
     @Override
-    public Review createReview(Review review) {
-        if (userService.getUserById(review.getUserId()) == null) {
-            throw new NotFoundException("Пользователь с id " + review.getUserId() + " не найден");
-        }
-
-        if (filmService.getFilmById(review.getFilmId()) == null) {
-            throw new NotFoundException("Фильм с id " + review.getFilmId() + " не найден");
-        }
-
-        return reviewStorage.createReview(review);
+    public Review addReview(Review review) {
+        checkFilmExist(review.getFilmId());
+        checkUserExist(review.getUserId());
+        Review addedReview = reviewDbRepository.addReview(review);
+        eventService.register(
+                addedReview.getUserId(),
+                Operation.ADD,
+                EventType.REVIEW,
+                addedReview.getReviewId()
+        );
+        return addedReview;
     }
 
     @Override
     public Review updateReview(Review review) {
-        // Проверка на существование отзыва перед обновлением
-        getReviewById(review.getReviewId());
-        return reviewStorage.updateReview(review);
+        checkFilmExist(review.getFilmId());
+        checkUserExist(review.getUserId());
+        checkReviewExist(review.getReviewId());
+        Review updatedReview = reviewDbRepository.updateReview(review);
+        eventService.register(
+                updatedReview.getUserId(),
+                Operation.UPDATE,
+                EventType.REVIEW,
+                updatedReview.getReviewId()
+        );
+        return updatedReview;
     }
 
     @Override
-    public void deleteReview(int id) {
-        // Проверка на существование отзыва перед удалением
-        getReviewById(id);
-        reviewStorage.deleteReview(id);
+    public Boolean deleteReview(Integer id) {
+        Review review = getReviewById(id);
+        eventService.register(
+                review.getUserId(),
+                Operation.REMOVE,
+                EventType.REVIEW,
+                review.getReviewId()
+        );
+        return reviewDbRepository.deleteReview(id);
     }
 
     @Override
-    public Review getReviewById(int id) {
-        return reviewStorage.getReviewById(id)
-                .orElseThrow(() -> new NotFoundException("Отзыв с id " + id + " не найден"));
+    public Review getReviewById(Integer id) {
+        return reviewDbRepository.getById(id).orElseThrow(() ->
+                new NotFoundException("Ошибка! Отзыва с заданным идентификатором не существует"));
     }
 
     @Override
-    public List<Review> getReviews(Integer filmId, int count) {
-        return reviewStorage.getReviews(filmId, count);
+    public List<Review> getReviewsByFilm(Integer filmId, Integer count) {
+        if (filmId == null) {
+            return reviewDbRepository.getAll(count);
+        }
+        checkFilmExist(filmId);
+        return reviewDbRepository.getByFilmId(filmId, count);
     }
 
     @Override
-    public void addLike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед добавлением лайка
-        if (getReviewById(reviewId) == null) {
-            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
-        }
-
-        // Проверка на существование пользователя перед добавлением лайка
-        if (userService.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
-
-        reviewStorage.addLike(reviewId, userId);
+    public void setLike(Integer id, Integer userId) {
+        checkReviewExist(id);
+        checkUserExist(userId);
+        reviewDbRepository.setUseful(id, userId, true);
     }
 
     @Override
-    public void addDislike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед добавлением дизлайка
-        if (getReviewById(reviewId) == null) {
-            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
-        }
-
-        // Проверка на существование пользователя перед добавлением дизлайка
-        if (userService.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
-
-        reviewStorage.addDislike(reviewId, userId);
+    public void setDislike(Integer id, Integer userId) {
+        checkReviewExist(id);
+        checkUserExist(userId);
+        reviewDbRepository.setUseful(id, userId, false);
     }
 
     @Override
-    public void removeLike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед удалением лайка
-        if (getReviewById(reviewId) == null) {
-            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
-        }
-
-        // Проверка на существование пользователя перед удалением лайка
-        if (userService.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
-
-        reviewStorage.removeLike(reviewId, userId);
+    public void deleteLike(Integer id, Integer userId) {
+        checkReviewExist(id);
+        checkUserExist(userId);
+        reviewDbRepository.deleteLike(id, userId);
     }
 
-    @Override
-    public void removeDislike(int reviewId, int userId) {
-        // Проверка на существование отзыва перед удалением дизлайка
-        if (getReviewById(reviewId) == null) {
-            throw new NotFoundException("Отзыв с id " + reviewId + " не найден");
-        }
+    private void checkReviewExist(Integer reviewId) {
+        reviewDbRepository.getById(reviewId).orElseThrow(() ->
+                new NotFoundException("Ошибка! Отзыва с заданным идентификатором не существует"));
+    }
 
-        // Проверка на существование пользователя перед удалением дизлайка
-        if (userService.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
+    private void checkUserExist(Integer userId) {
+        userDbRepository.getById(userId).orElseThrow(() ->
+                new NotFoundException("Ошибка! Пользователя с заданным идентификатором не существует"));
+    }
 
-        reviewStorage.removeDislike(reviewId, userId);
+    private void checkFilmExist(Integer filmId) {
+        filmDbRepository.getById(filmId).orElseThrow(() ->
+                new NotFoundException("Ошибка! Фильма с заданным идентификатором не существует"));
     }
 }

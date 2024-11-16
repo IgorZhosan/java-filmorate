@@ -1,38 +1,30 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.enums.SearchType;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public interface FilmService {
-    Collection<Film> getAllFilms();
+    List<Film> getFilms();
 
-    Film filmCreate(Film film);
+    Film getFilmById(Integer id);
 
-    Film filmUpdate(Film film);
+    Film addFilm(Film film);
 
-    Film getFilmById(int id);
+    Boolean deleteFilm(Integer id);
 
-    void addLike(int id, int idUser);
+    Film updateFilm(Film film);
 
-    void deleteLike(int id, int idUser);
+    void addUserLike(Integer filmId, Integer userId);
 
-    Collection<Film> getPopular(int count);
+    void deleteUserLike(Integer filmId, Integer userId);
 
-    Collection<Film> getMostPopularFilmsByGenreAndYear(int count, int genreId, int year);
+    List<Film> getPopularFilms(Integer count, Integer genreId, Integer year);
 
-    Collection<Film> getMostPopularFilmsByYear(int count, int year);
+    List<Film> getFilmsByDirector(Integer directorId, String sortBy);
 
-    Collection<Film> getMostPopularFilmsByGenre(int count, int genreId);
+    Set<Film> getCommonFilms(Integer userId, Integer friendId);
 
-    void deleteFilm(final int id);
-
-    List<Film> getFilmsByDirectorSorted(int directorId, String sortBy);
-
-    Collection<Film> getCommonFilms(int userId, int friendId);
-
-    Collection<Film> getSearchedFilms(String query, Set<SearchType> by);
+    List<Film> searchFilm(String query, String by);
 }

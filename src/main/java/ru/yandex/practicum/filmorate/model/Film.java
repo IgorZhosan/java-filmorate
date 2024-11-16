@@ -1,46 +1,42 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.annotation.DateReleaseValidation;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import ru.yandex.practicum.filmorate.util.MinimumDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Data
+@Builder
+@EqualsAndHashCode(of = "id")
+@ToString
 public class Film {
-
-    public static final String DATE_FORMAT = "yyyy-MM-dd";
-
     private Integer id;
-
-    @Size(max = 255, message = "Максимальная длина - 255 символов")
-    @NotBlank(message = "Фильм должен быть указан")
-    private String name;
-
-    @Size(max = 200, message = "Максимальная длина описания - 200 символов")
-    private String description;
-
-    @DateReleaseValidation
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
-    private LocalDate releaseDate;
-
-    @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
-    private int duration;
-
-    private final Set<Integer> likes = new HashSet<>();
 
     @NotNull
     private Mpa mpa;
 
-    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    @NotBlank(message = "Название фильма не может быть пустым")
+    private String name;
 
-    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
+    @Size(max = 200, message = "Описание фильма должно быть не более 200 символов")
+    @NotBlank(message = "Описание не может быть пустым")
+    private String description;
+
+    @MinimumDate
+    private LocalDate releaseDate;
+
+    @Min(value = 0, message = "Продолжительность фильма не может быть отрицательной")
+    private Integer duration;
+
+    private LinkedHashSet<Genre> genres;
+
+    private LinkedHashSet<Director> directors;
 }

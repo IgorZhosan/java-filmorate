@@ -1,53 +1,51 @@
 package ru.yandex.practicum.filmorate.service.director;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import java.util.List;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class DirectorServiceImpl implements DirectorService {
-    private final DirectorStorage directorStorage;
 
-    public DirectorServiceImpl(DirectorStorage directorStorage) {
-        this.directorStorage = directorStorage;
+    private final DirectorStorage directorDbRepository;
+
+    @Override
+    public List<Director> getAll() {
+        log.info("Получение списка всех директоров.");
+        return directorDbRepository.getAll();
     }
 
     @Override
-    public Director getDirectorById(int id) {
-        return directorStorage.getDirectorById(id)
-                .orElseThrow(() -> new NotFoundException("Режиссер с id " + id + " не найден."));
+    public Director getDirectorById(Integer id) {
+        return directorDbRepository.getDirectorById(id)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Директора с заданным идентификатором не существует"));
     }
 
     @Override
-    public List<Director> getAllDirectors() {
-        return directorStorage.getAllDirectors();
-    }
-
-    @Override
-    public Director createDirector(Director director) {
-        if (director.getName().isBlank() || director.getName().isEmpty()) {
-            throw new ValidationException("Имя режиссера не может быть пустым.");
-        }
-        return directorStorage.createDirector(director);
+    public Director addDirector(Director director) {
+        log.info("Директор с id {} добавлен.", director.getId());
+        return directorDbRepository.addDirector(director);
     }
 
     @Override
     public Director updateDirector(Director director) {
-        if (director.getId() == null || directorStorage.getDirectorById(director.getId()).isEmpty()) {
-            throw new NotFoundException("Режиссер с id " + director.getId() + " не найден.");
-        }
-        return directorStorage.updateDirector(director);
+        log.debug("Изменение параметров директора с идентификатором {}", director.getId());
+        directorDbRepository.getDirectorById(director.getId())
+                .orElseThrow(() -> new NotFoundException("Ошибка! Директора с заданным идентификатором не существует"));
+        return directorDbRepository.updateDirector(director);
     }
 
     @Override
-    public void deleteDirector(int id) {
-        if (directorStorage.getDirectorById(id).isEmpty()) {
-            throw new NotFoundException("Режиссер с id " + id + " не найден.");
-        }
-        directorStorage.deleteDirector(id);
+    public void deleteDirector(Integer id) {
+        getDirectorById(id);
+        log.info("Директор с id {} удалён.", id);
+        directorDbRepository.deleteDirector(id);
     }
 }
