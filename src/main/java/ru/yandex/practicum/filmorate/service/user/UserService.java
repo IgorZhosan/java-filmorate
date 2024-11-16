@@ -1,24 +1,29 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface UserService {
-    Collection<User> getAllUsers();
+    List<User> getUsers();
 
-    User userCreate(User user);
+    User getUserById(Integer id);
 
-    User userUpdate(User user);
+    User addUser(User user);
 
-    User getUserById(int id);
+    List<User> addFriend(Integer userId, Integer friendId);
 
-    void addNewFriend(int userId, int friendId);
+    List<User> getFriends(Integer id);
 
-    void deleteFriend(int userId, int friendId);
+    User updateUser(User user);
 
-    List<User> getAllFriends(int userId);
+    void deleteFriend(Integer userId, Integer friendId);
 
-    List<User> getCommonFriends(int userId, int otherId);
+    Set<User> getCommonFriends(Integer id, Integer otherId);
+
+    Boolean deleteUser(Integer id);
+
+    Set<Film> getRecommendations(Integer id);
 }

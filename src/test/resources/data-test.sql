@@ -1,32 +1,99 @@
-INSERT INTO mpa(mpa_id, mpa_name)
-    VALUES (1, 'G'),
-           (2, 'PG'),
-           (3, 'PG-13'),
-           (4, 'R'),
-           (5, 'NC-17');
+INSERT INTO mpa (mpa_name)
+VALUES ('G');
+INSERT INTO mpa (mpa_name)
+VALUES ('PG');
+INSERT INTO mpa (mpa_name)
+VALUES ('PG-13');
+INSERT INTO mpa (mpa_name)
+VALUES ('R');
+INSERT INTO mpa (mpa_name)
+VALUES ('NC-17');
 
-INSERT INTO genres(genre_id, genre_name)
-    VALUES (1, 'Комедия'),
-           (2, 'Драма'),
-           (3, 'Мультфильм'),
-           (4, 'Триллер'),
-           (5, 'Документальный'),
-           (6, 'Боевик');
+INSERT INTO genres (genre_name)
+VALUES ('Комедия');
 
-INSERT INTO users(name, login, email, birthday)
-VALUES('Sylik', 'Sylya', 'sylik@mail.ru', '2014-07-07'),
-      ('Bocha', 'Bochka', 'bochaledi@mail.ru', '2015-05-05'),
-      ('Chycha', 'Chych', 'chycha@mail.ru', '2020-01-07'),
-      ('Chosya', 'Chosik', 'chosya@mail.ru', '2020-07-01');
+INSERT INTO genres (genre_name)
+VALUES ('Драма');
 
-INSERT INTO films(name, description, release_date, duration, mpa_id)
-    VALUES ('film1', 'description1', '2011-01-01', '150', 1),
-           ('film2', 'description2', '2012-12-12', '160', 2),
-           ('film3', 'description3', '2013-03-03', '170', 3),
-           ('film4', 'description4', '2014-11-14', '130', 4),
-           ('film5', 'description5', '2015-02-15', '125', 5),
-           ('film6', 'description6', '2016-06-16', '115', 5),
-           ('film7', 'description7', '2017-11-17', '103', 5);
+INSERT INTO genres (genre_name)
+VALUES ('Мультфильм');
 
-INSERT INTO film_genres(film_id, genre_id) VALUES (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 5), (7, 2);
-INSERT INTO friends(user_id, friend_id) VALUES (1, 2), (1, 3), (2, 1), (2, 4), (3, 1), (3, 4), (4, 1);
+INSERT INTO genres (genre_name)
+VALUES ('Триллер');
+
+INSERT INTO genres (genre_name)
+VALUES ('Документальный');
+
+INSERT INTO genres (genre_name)
+VALUES ('Боевик');
+
+/* Тестовые данные */
+
+INSERT INTO films (film_name, mpa_id, description, release_date, duration)
+VALUES ('Терминатор', 1, 'Большой железный', '1990-05-19', 90);
+
+INSERT INTO films (film_name, mpa_id, description, release_date, duration)
+VALUES ('Аватар', 2, 'Синие человечки', '2017-04-01', 150);
+
+INSERT INTO films (film_name, mpa_id, description, release_date, duration)
+VALUES ('Побег из Шоушенка', 4, 'Побег', '1985-05-01', 70);
+
+
+INSERT INTO users (email, login, user_name, birthday)
+VALUES ('first@yandex.ru', 'Petro', 'Петр', '1990-05-19');
+
+INSERT INTO users (email, login, user_name, birthday)
+VALUES ('second@yandex.ru', 'Bigi', 'Лёха', '1985-02-20');
+
+INSERT INTO users (email, login, user_name, birthday)
+VALUES ('third@yandex.ru', 'Gena', 'Гена', '1996-01-05');
+
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES (1, 1);
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES (1, 2);
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES (2, 3);
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES (3, 1);
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES (3, 2);
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES (3, 3);
+
+INSERT INTO users_friends (user_id, friend_id)
+VALUES (1, 2);
+
+INSERT INTO users_friends (user_id, friend_id)
+VALUES (1, 3);
+
+INSERT INTO users_friends (user_id, friend_id)
+VALUES (2, 1);
+
+INSERT INTO users_friends (user_id, friend_id)
+VALUES (2, 3);
+
+
+INSERT INTO users_films_likes (user_id, film_id)
+VALUES (1, 1);
+
+INSERT INTO users_films_likes (user_id, film_id)
+VALUES (1, 2);
+
+INSERT INTO users_films_likes (user_id, film_id)
+VALUES (1, 3);
+
+INSERT INTO users_films_likes (user_id, film_id)
+VALUES (2, 1);
+
+INSERT INTO users_films_likes (user_id, film_id)
+VALUES (2, 2);
+
+INSERT INTO users_films_likes (user_id, film_id)
+VALUES (3, 1);
