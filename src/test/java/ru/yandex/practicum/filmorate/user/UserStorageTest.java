@@ -1,4 +1,4 @@
-package user;
+package ru.yandex.practicum.filmorate.user;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;

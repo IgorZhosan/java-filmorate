@@ -1,4 +1,4 @@
-package mpa;
+package ru.yandex.practicum.filmorate.mpa;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;

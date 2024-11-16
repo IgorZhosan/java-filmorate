@@ -1,4 +1,4 @@
-package genre;
+package ru.yandex.practicum.filmorate.genre;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
