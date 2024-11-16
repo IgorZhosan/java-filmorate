@@ -5,7 +5,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.util.List;
 
 public interface MpaService {
-    Mpa getMpaById(int id);
+    List<Mpa> getMpa();
 
-    List<Mpa> getAllMpa();
+    Mpa getRatingById(Integer id);
+
+    Mpa addRating(Mpa rating);
 }

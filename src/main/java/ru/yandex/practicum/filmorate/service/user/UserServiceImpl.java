@@ -1,152 +1,108 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.util.EventType;
+import ru.yandex.practicum.filmorate.util.Operation;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserStorage userStorage;
 
-    public UserServiceImpl(@Qualifier("jdbcUserStorage") UserStorage userStorage) {
-        this.userStorage = userStorage;
+    private final UserStorage userDbRepository;
+    private final EventService eventService;
+
+    @Override
+    public List<User> getUsers() {
+        return userDbRepository.getAll();
     }
 
     @Override
-    public Collection<User> getAllUsers() { //получение списка пользователей.
-        log.info("Получение списка всех пользователей");
-        return userStorage.getAllUsers();
+    public User getUserById(Integer id) {
+        return userDbRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException("Ошибка! Пользователя с заданным идентификатором не существует"));
     }
 
     @Override
-    public User userCreate(final User user) { // для добавления нового пользователя в список.
-        if (userStorage.getAllUsers().contains(user)) {
-            log.warn("Пользователь с id {} уже добавлен в список.", user.getId());
-            throw new DuplicatedDataException("Этот пользователь уже существует.");
+    public User addUser(User user) {
+        checkName(user);
+        return userDbRepository.addUser(user);
+    }
+
+    @Override
+    public List<User> addFriend(Integer userId, Integer friendId) {
+        checkExistUser(userId);
+        checkExistUser(friendId);
+        if (Objects.equals(userId, friendId)) {
+            log.warn("Ошибка! Нельзя добавить самого себя в друзья");
+            throw new ValidationException("Ошибка! Нельзя добавить самого себя в друзья");
         }
-        userValidate(user);
-        User userNew = userStorage.userCreate(user);
-        log.info("Пользователь с id {} добавлен.", user.getId());
-        return userNew;
+        userDbRepository.addFriend(userId, friendId);
+        eventService.register(userId, Operation.ADD, EventType.FRIEND, friendId);
+        return List.of(userDbRepository.getById(userId).get(), userDbRepository.getById(friendId).get());
     }
 
     @Override
-    public User userUpdate(final User user) { //для обновления данных существующего пользователя.
-        if (user.getId() == null || userStorage.getUserById(user.getId()).isEmpty()) {
-            log.warn("Пользователь с id {} не найден.", user.getId());
-            throw new NotFoundException("Пользователь с id: " + user.getId() + " не найден.");
+    public List<User> getFriends(Integer id) {
+        checkExistUser(id);
+        return userDbRepository.getFriendsByUserId(id);
+    }
+
+    @Override
+    public User updateUser(User user) {
+        log.debug("Изменение параметров пользователя с идентификатором {}", user.getId());
+        checkExistUser(user.getId());
+        return userDbRepository.updateUser(user);
+    }
+
+    @Override
+    public void deleteFriend(Integer userId, Integer friendId) {
+        checkExistUser(userId);
+        checkExistUser(friendId);
+        eventService.register(userId, Operation.REMOVE, EventType.FRIEND, friendId);
+        userDbRepository.deleteFriend(userId, friendId);
+    }
+
+    @Override
+    public Set<User> getCommonFriends(Integer id, Integer otherId) {
+        checkExistUser(id);
+        checkExistUser(otherId);
+        return userDbRepository.getCommonFriends(id, otherId);
+    }
+
+    @Override
+    public Boolean deleteUser(Integer id) {
+        checkExistUser(id);
+        return userDbRepository.deleteUser(id);
+    }
+
+    private void checkExistUser(Integer id) {
+        if (userDbRepository.getById(id).isEmpty()) {
+            throw new NotFoundException("Ошибка! Пользователя с заданным идентификатором не существует");
         }
-        userValidate(user);
-        User userNew = userStorage.userUpdate(user);
-        log.info("Пользователь с id {} обновлен.", user.getId());
-        return userNew;
     }
 
-    @Override
-    public User getUserById(final int id) { // получение пользователя по id
-        log.info("Получение пользователя по id.");
-        return userStorage.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден."));
-    }
-
-    @Override
-    public void addNewFriend(final int userId, final int friendId) { //добавление пользователя в друзья
-        getUserById(userId);
-        getUserById(friendId);
-        if (userId == friendId) {
-            log.warn("Ошибка при добавлении в друзья. Id пользователей совпадают.");
-            throw new ValidationException("Ошибка при добавлении в друзья. Id пользователей совпадают.");
-        }
-        userStorage.addNewFriend(userId, friendId);
-        log.info("Пользователь с id {} добавлен в друзья к пользователю с id {}.", friendId, userId);
-    }
-
-    @Override
-    public void deleteFriend(final int userId, final int friendId) { // удаление из друзей пользователя
-        getUserById(userId);
-        getUserById(friendId);
-        if (userId == friendId) {
-            log.warn("Ошибка при удалении пользователя из друзей. Id пользователей совпадают.");
-            throw new ValidationException("Ошибка при удалении пользователя из друзей. Id пользователей совпадают.");
-        }
-        userStorage.deleteFriend(userId, friendId);
-        log.info("Пользователь с id {} удален из друзей пользователя с id {}.", friendId, userId);
-    }
-
-    @Override
-    public List<User> getAllFriends(final int userId) { // получение списка друзей пользователя
-        getUserById(userId);
-        List<User> listFriends = userStorage.getAllFriends(userId);
-        log.info("Получение списка друзей пользователя с id {}.", userId);
-        return listFriends;
-    }
-
-    // получение списка общих друзей с пользователем
-    @Override
-    public List<User> getCommonFriends(final int userId, final int otherId) {
-        getUserById(userId);
-        getUserById(otherId);
-        if (userId == otherId) {
-            log.warn("Ошибка при получении списка общих друзей. Id пользователей совпадают.");
-            throw new ValidationException("Ошибка при получении списка общих друзей. Id пользователей совпадают.");
-        }
-        List<User> listFriends = userStorage.getCommonFriends(userId, otherId);
-        log.info("Получение списка общих друзей у пользователя с id {} и пользователя с id {}.", otherId, userId);
-        return listFriends;
-    }
-
-    @Override
-    @Transactional
-    public void deleteUser(final int id) {
-        log.info("Начало удаления пользователя с id {}", id);
-
-        userStorage.getUserById(id).orElseThrow(() ->
-                new NotFoundException("Пользователь с id " + id + " не найден.")
-        );
-
-        log.info("Удаление всех связанных друзей и лайков для пользователя с id {}", id);
-        userStorage.deleteFriend(id, id);  // Удаляем все связи с друзьями
-        userStorage.deleteUser(id);
-
-        log.info("Пользователь с id {} успешно удален", id);
-    }
-
-    private void userValidate(final User user) {
+    private void checkName(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
     }
 
     @Override
-    public Set<Film> getRecommendations(int userId) {
-        log.info("Получение рекомендаций для пользователя с id {}", userId);
-
-        getUserById(userId);
-
-        Set<Film> recommendations = userStorage.getRecommendations(userId);
-
-        if (recommendations.isEmpty()) {
-            log.info("Нет рекомендаций для пользователя с id {}", userId);
-            return Collections.emptySet();
-        }
-
-        log.info("Найдено {} рекомендаций для пользователя с id {}", recommendations.size(), userId);
-        return recommendations;
-    }
-
-    @Override
-    public Collection<Feed> getFeedOfUser(int userId) {
-        return userStorage.getFeedOfUser(userId);
+    public Set<Film> getRecommendations(Integer id) {
+        checkExistUser(id);
+        return userDbRepository.getRecommendations(id);
     }
 }
