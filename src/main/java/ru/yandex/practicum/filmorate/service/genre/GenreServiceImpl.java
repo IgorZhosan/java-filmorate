@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service.genre;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -9,23 +8,25 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.util.List;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class GenreServiceImpl implements GenreService {
+    private final GenreStorage genreStorage;
 
-    private final GenreStorage genreDbRepository;
-
-    @Override
-    public List<Genre> getGenres() {
-        log.info("Получение списка всех жанров.");
-        return genreDbRepository.getAll();
+    public GenreServiceImpl(GenreStorage genreStorage) {
+        this.genreStorage = genreStorage;
     }
 
     @Override
-    public Genre getGenreById(Integer id) {
-        log.debug("Получение жанра с идентификатором {}", id);
-        return genreDbRepository.getById(id)
-                .orElseThrow(() -> new NotFoundException("Ошибка! Жанра с заданным идентификатором не существует"));
+    public Genre getGenreById(final int id) {
+        log.info("Получение жанра по id.");
+        return genreStorage.getGenreById(id)
+                .orElseThrow(() -> new NotFoundException("Жанр с id: " + id + " не существует."));
+    }
+
+    @Override
+    public List<Genre> getAllGenres() {
+        log.info("Получение списка всех жанров.");
+        return genreStorage.getAllGenres();
     }
 }

@@ -2,29 +2,21 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public interface FilmService {
-    List<Film> getFilms();
+    Collection<Film> getAllFilms();
 
-    Film getFilmById(Integer id);
+    Film filmCreate(Film film);
 
-    Film addFilm(Film film);
+    Film filmUpdate(Film film);
 
-    Boolean deleteFilm(Integer id);
+    Film getFilmById(int id);
 
-    Film updateFilm(Film film);
+    void addLike(int id, int idUser);
 
-    void addUserLike(Integer filmId, Integer userId);
+    void deleteLike(int id, int idUser);
 
-    void deleteUserLike(Integer filmId, Integer userId);
-
-    List<Film> getPopularFilms(Integer count, Integer genreId, Integer year);
-
-    List<Film> getFilmsByDirector(Integer directorId, String sortBy);
-
-    Set<Film> getCommonFilms(Integer userId, Integer friendId);
-
-    List<Film> searchFilm(String query, String by);
+    List<Film> getPopular(int count);
 }
